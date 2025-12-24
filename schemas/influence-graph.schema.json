@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://inspographic.app/schemas/influence-graph.schema.json",
+  "title": "Influence Graph",
+  "description": "A directed graph representing influences between people, ideas, or entities",
+  "type": "object",
+  "required": ["subject", "nodes", "links"],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The central subject of this influence graph"
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Array of nodes in the graph",
+      "items": {
+        "$ref": "#/definitions/node"
+      }
+    },
+    "links": {
+      "type": "array",
+      "description": "Array of directed edges between nodes",
+      "items": {
+        "$ref": "#/definitions/link"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "node": {
+      "type": "object",
+      "required": ["id", "name", "depth"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique identifier for the node"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Display name for the node"
+        },
+        "depth": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Depth in the influence graph (0 = subject)"
+        },
+        "size": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Optional: Visual size/weight for rendering (v2)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional: Additional context about this node (v2)"
+        },
+        "url": {
+          "type": "string",
+          "description": "Optional: Reference URL for this entity (v2)"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Optional: Extensible metadata for future use (v2)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "link": {
+      "type": "object",
+      "required": ["source", "target"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Node ID of the influence source"
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Node ID of the influence target"
+        },
+        "strength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Optional: Strength of influence (v2)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional: Description of the relationship (v2)"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Optional: Extensible metadata for future use (v2)"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

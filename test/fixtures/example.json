@@ -1,0 +1,12 @@
+{
+  "subject": "Miles Davis",
+  "nodes": [
+    { "id": "miles", "name": "Miles Davis", "depth": 0 },
+    { "id": "coltrane", "name": "John Coltrane", "depth": 1 },
+    { "id": "parker", "name": "Charlie Parker", "depth": 1 }
+  ],
+  "links": [
+    { "source": "parker", "target": "miles" },
+    { "source": "coltrane", "target": "miles" }
+  ]
+}
