@@ -13,14 +13,14 @@ import {createForceSimulation} from "./components/forceGraph.js";
 ```js
 // Mock data for development
 const mockData = {
-  subject: { id: "bowie", name: "David Bowie" },
+  subject: { id: "bowie", name: "David Bowie", depth: 0 },
   influences: [
-    { id: "little-richard", name: "Little Richard" },
-    { id: "kraftwerk", name: "Kraftwerk" },
-    { id: "velvet-underground", name: "The Velvet Underground" },
-    { id: "iggy-pop", name: "Iggy Pop" },
-    { id: "lindsay-kemp", name: "Lindsay Kemp" },
-    { id: "kabuki", name: "Kabuki Theatre" }
+    { id: "little-richard", name: "Little Richard", depth: 1 },
+    { id: "kraftwerk", name: "Kraftwerk", depth: 1 },
+    { id: "velvet-underground", name: "The Velvet Underground", depth: 1 },
+    { id: "iggy-pop", name: "Iggy Pop", depth: 1 },
+    { id: "lindsay-kemp", name: "Lindsay Kemp", depth: 1 },
+    { id: "kabuki", name: "Kabuki Theatre", depth: 1 }
   ],
   links: [
     { source: "little-richard", target: "bowie" },
