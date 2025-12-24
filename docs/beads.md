@@ -2,6 +2,67 @@
 
 This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
 
+## Installation
+
+### NPM Installation (Recommended)
+
+The beads CLI is available as an npm package:
+
+```bash
+npm install -g @beads/bd
+```
+
+**Known Issues**: Some environments (particularly cloud VMs with network restrictions) may encounter download failures during the postinstall script:
+
+```
+Error installing bd: getaddrinfo EAI_AGAIN github.com
+```
+
+If this occurs, use the Go installation method below.
+
+### Go Installation (Fallback)
+
+If npm installation fails due to network restrictions:
+
+```bash
+go install github.com/steveyegge/beads/cmd/bd@latest
+export PATH="$PATH:$HOME/go/bin"
+bd version
+```
+
+### SessionStart Hook (Claude Code for Web)
+
+For automatic installation in Claude Code cloud environments, create `.claude/hooks/session-start.sh`:
+
+```bash
+#!/bin/bash
+echo "Installing bd (beads issue tracker)..."
+
+# Try npm first
+npm install -g @beads/bd 2>/dev/null
+
+# Fallback to Go if npm fails
+if ! command -v bd &> /dev/null; then
+  echo "npm install failed, trying Go..."
+  go install github.com/steveyegge/beads/cmd/bd@latest
+  export PATH="$PATH:$HOME/go/bin"
+fi
+
+# Initialize if needed
+if [ ! -d .beads ]; then
+  bd init --quiet
+fi
+
+echo "✓ bd is ready! Use 'bd ready' to see available work."
+```
+
+Make executable: `chmod +x .claude/hooks/session-start.sh`
+
+**Network Requirements**: The SessionStart hook requires access to:
+- `registry.npmjs.org` (for npm packages)
+- `github.com` (for binary downloads)
+- `pkg.go.dev` / `proxy.golang.org` (for Go packages)
+
 ## Quick Reference
 
 ```bash
