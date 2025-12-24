@@ -1,0 +1,105 @@
+{
+  "recordedAt": "2025-12-24T21:15:17.377Z",
+  "data": {
+    "subject": "Miles Davis",
+    "nodes": [
+      {
+        "id": "miles-davis",
+        "name": "Miles Davis",
+        "depth": 0
+      },
+      {
+        "id": "charlie-parker",
+        "name": "Charlie Parker",
+        "depth": 1
+      },
+      {
+        "id": "gil-evans",
+        "name": "Gil Evans",
+        "depth": 1
+      },
+      {
+        "id": "lester-young",
+        "name": "Lester Young",
+        "depth": 2
+      },
+      {
+        "id": "buster-smith",
+        "name": "Buster \"Prof\" Smith",
+        "depth": 2
+      },
+      {
+        "id": "jay-mcshann",
+        "name": "Jay McShann",
+        "depth": 2
+      },
+      {
+        "id": "louis-armstrong",
+        "name": "Louis Armstrong",
+        "depth": 2
+      },
+      {
+        "id": "duke-ellington",
+        "name": "Duke Ellington",
+        "depth": 2
+      },
+      {
+        "id": "don-redman",
+        "name": "Don Redman",
+        "depth": 2
+      },
+      {
+        "id": "red-nichols",
+        "name": "Red Nichols",
+        "depth": 2
+      },
+      {
+        "id": "claude-thornhill",
+        "name": "Claude Thornhill",
+        "depth": 2
+      }
+    ],
+    "links": [
+      {
+        "source": "charlie-parker",
+        "target": "miles-davis"
+      },
+      {
+        "source": "gil-evans",
+        "target": "miles-davis"
+      },
+      {
+        "source": "lester-young",
+        "target": "charlie-parker"
+      },
+      {
+        "source": "buster-smith",
+        "target": "charlie-parker"
+      },
+      {
+        "source": "jay-mcshann",
+        "target": "charlie-parker"
+      },
+      {
+        "source": "louis-armstrong",
+        "target": "gil-evans"
+      },
+      {
+        "source": "duke-ellington",
+        "target": "gil-evans"
+      },
+      {
+        "source": "don-redman",
+        "target": "gil-evans"
+      },
+      {
+        "source": "red-nichols",
+        "target": "gil-evans"
+      },
+      {
+        "source": "claude-thornhill",
+        "target": "gil-evans"
+      }
+    ]
+  }
+}
