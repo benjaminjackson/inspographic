@@ -70,16 +70,28 @@ document.body.appendChild(panelElement);
 ```
 
 ```js
-// API key warning message - only shown if no key saved
-!hasApiKey() ? d3.create("div")
-  .style("padding", "16px")
-  .style("background", "#fff3cd")
-  .style("border", "1px solid #ffc107")
-  .style("border-radius", "8px")
-  .style("margin-bottom", "20px")
-  .style("color", "#856404")
-  .html("⚠️ <strong>No API key saved.</strong> Click Settings to enter your Exa API key.")
-  .node() : null
+// API key warning message - reactive to key changes
+(() => {
+  const warning = d3.create("div")
+    .style("padding", "16px")
+    .style("background", "#fff3cd")
+    .style("border", "1px solid #ffc107")
+    .style("border-radius", "8px")
+    .style("margin-bottom", "20px")
+    .style("color", "#856404")
+    .html("⚠️ <strong>No API key saved.</strong> Click Settings to enter your Exa API key.")
+    .node();
+
+  // Set initial visibility
+  warning.style.display = hasApiKey() ? 'none' : 'block';
+
+  // Update visibility when API key changes
+  document.addEventListener('apiKeyChanged', () => {
+    warning.style.display = hasApiKey() ? 'none' : 'block';
+  });
+
+  return warning;
+})()
 ```
 
 ```js

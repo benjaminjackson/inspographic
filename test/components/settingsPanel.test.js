@@ -204,5 +204,36 @@ describe('settingsPanel', () => {
       container.click()
       expect(panel.isVisible()).toBe(true)
     })
+
+    it('dispatches apiKeyChanged event when key is saved', () => {
+      const eventSpy = vi.fn()
+      document.addEventListener('apiKeyChanged', eventSpy)
+
+      const input = document.querySelector('#api-key-input')
+      const saveBtn = document.querySelector('.save-button')
+
+      input.value = 'test-key-123'
+      saveBtn.click()
+
+      expect(eventSpy).toHaveBeenCalled()
+      document.removeEventListener('apiKeyChanged', eventSpy)
+    })
+
+    it('dispatches apiKeyChanged event when key is cleared', () => {
+      localStorage.setItem('inspographic.exa.apiKey', 'existing-key')
+
+      const eventSpy = vi.fn()
+      document.addEventListener('apiKeyChanged', eventSpy)
+
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+
+      const clearBtn = document.querySelector('.clear-button')
+      clearBtn.click()
+
+      expect(eventSpy).toHaveBeenCalled()
+
+      confirmSpy.mockRestore()
+      document.removeEventListener('apiKeyChanged', eventSpy)
+    })
   })
 })

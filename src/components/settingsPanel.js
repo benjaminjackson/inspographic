@@ -102,6 +102,7 @@ export function createSettingsPanel() {
       if (value) {
         saveApiKey(value)
         updateWarningVisibility()
+        document.dispatchEvent(new CustomEvent('apiKeyChanged'))
       }
     })
 
@@ -112,6 +113,7 @@ export function createSettingsPanel() {
         clearApiKey()
         input.value = ''
         updateWarningVisibility()
+        document.dispatchEvent(new CustomEvent('apiKeyChanged'))
       }
     })
 
