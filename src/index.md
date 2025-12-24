@@ -36,8 +36,8 @@ document.body.appendChild(panelElement);
 ```
 
 ```js
-// Settings button
-const settingsButton = (() => {
+// Settings button (fixed position bottom-right)
+(() => {
   const button = d3.create("button")
     .attr("class", "settings-button")
     .style("position", "fixed")
@@ -70,26 +70,21 @@ const settingsButton = (() => {
 ```
 
 ```js
-// API key warning message
-const apiKeyWarning = (() => {
-  if (hasApiKey()) return null;
-
-  const warning = d3.create("div")
-    .style("padding", "16px")
-    .style("background", "#fff3cd")
-    .style("border", "1px solid #ffc107")
-    .style("border-radius", "8px")
-    .style("margin-bottom", "20px")
-    .style("color", "#856404")
-    .html("⚠️ <strong>No API key saved.</strong> Click Settings to enter your Exa API key.");
-
-  return warning.node();
-})()
+// API key warning message - only shown if no key saved
+!hasApiKey() ? d3.create("div")
+  .style("padding", "16px")
+  .style("background", "#fff3cd")
+  .style("border", "1px solid #ffc107")
+  .style("border-radius", "8px")
+  .style("margin-bottom", "20px")
+  .style("color", "#856404")
+  .html("⚠️ <strong>No API key saved.</strong> Click Settings to enter your Exa API key.")
+  .node() : null
 ```
 
 ```js
 // Person name input and generate button
-const generateForm = (() => {
+(() => {
   const container = d3.create("div")
     .style("margin-bottom", "20px")
     .style("display", "flex")
@@ -116,7 +111,6 @@ const generateForm = (() => {
     .style("font-size", "14px")
     .style("font-weight", "500")
     .style("transition", "background 0.2s")
-    .attr("disabled", hasApiKey() ? null : true)
     .on("click", async () => {
       const personName = input.node().value.trim();
       if (!personName) {
