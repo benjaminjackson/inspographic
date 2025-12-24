@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createForceSimulation, calculateNodeDepths, calculateRadialDistance, calculateCollisionRadius } from '../../src/components/forceGraph.js';
+import { createForceSimulation, calculateNodeDepths, calculateRadialDistance, calculateCollisionRadius, countNodeConnections, calculateNodeRadius } from '../../src/components/forceGraph.js';
 
 describe('forceGraph', () => {
   it('exports createForceSimulation function', () => {
@@ -252,5 +252,147 @@ describe('calculateCollisionRadius', () => {
     // Influence: 8 + 5 + 4 = 17
     expect(subjectRadius).toBe(17);
     expect(influenceRadius).toBe(17);
+  });
+});
+
+describe('countNodeConnections', () => {
+  it('returns 0 for node with no connections', () => {
+    const node = { id: 'isolated' };
+    const links = [];
+
+    const result = countNodeConnections(node, links);
+    expect(result).toBe(0);
+  });
+
+  it('returns 1 for node with one outgoing connection', () => {
+    const node = { id: 'a' };
+    const links = [{ source: 'a', target: 'b' }];
+
+    const result = countNodeConnections(node, links);
+    expect(result).toBe(1);
+  });
+
+  it('returns 1 for node with one incoming connection', () => {
+    const node = { id: 'b' };
+    const links = [{ source: 'a', target: 'b' }];
+
+    const result = countNodeConnections(node, links);
+    expect(result).toBe(1);
+  });
+
+  it('counts both incoming and outgoing connections', () => {
+    const node = { id: 'miles' };
+    const links = [
+      { source: 'coltrane', target: 'miles' },
+      { source: 'parker', target: 'miles' },
+      { source: 'miles', target: 'davis' }
+    ];
+
+    const result = countNodeConnections(node, links);
+    expect(result).toBe(3);
+  });
+
+  it('handles links with object references', () => {
+    const nodeA = { id: 'a' };
+    const nodeB = { id: 'b' };
+    const links = [{ source: nodeA, target: nodeB }];
+
+    const resultA = countNodeConnections(nodeA, links);
+    const resultB = countNodeConnections(nodeB, links);
+
+    expect(resultA).toBe(1);
+    expect(resultB).toBe(1);
+  });
+
+  it('counts subject node with multiple influences', () => {
+    const subject = { id: 'bowie' };
+    const links = [
+      { source: 'kraftwerk', target: 'bowie' },
+      { source: 'iggy', target: 'bowie' },
+      { source: 'eno', target: 'bowie' },
+      { source: 'burroughs', target: 'bowie' },
+      { source: 'warhol', target: 'bowie' },
+      { source: 'little-richard', target: 'bowie' }
+    ];
+
+    const result = countNodeConnections(subject, links);
+    expect(result).toBe(6);
+  });
+});
+
+describe('calculateNodeRadius', () => {
+  it('returns minimum radius for node with no connections', () => {
+    const node = { id: 'isolated' };
+    const links = [];
+    const minRadius = 6;
+    const maxRadius = 20;
+
+    const result = calculateNodeRadius(node, links, minRadius, maxRadius);
+    expect(result).toBe(minRadius);
+  });
+
+  it('returns scaled radius for node with one connection', () => {
+    const node = { id: 'a' };
+    const links = [{ source: 'a', target: 'b' }];
+    const minRadius = 6;
+    const maxRadius = 20;
+
+    const result = calculateNodeRadius(node, links, minRadius, maxRadius);
+    expect(result).toBeGreaterThan(minRadius);
+    expect(result).toBeLessThanOrEqual(maxRadius);
+  });
+
+  it('returns larger radius for node with more connections', () => {
+    const nodeA = { id: 'a' };
+    const nodeB = { id: 'b' };
+    const links = [
+      { source: 'a', target: 'x' },
+      { source: 'b', target: 'x' },
+      { source: 'b', target: 'y' },
+      { source: 'b', target: 'z' }
+    ];
+
+    const radiusA = calculateNodeRadius(nodeA, links, 6, 20);
+    const radiusB = calculateNodeRadius(nodeB, links, 6, 20);
+
+    expect(radiusB).toBeGreaterThan(radiusA);
+  });
+
+  it('caps radius at maximum for highly connected nodes', () => {
+    const node = { id: 'hub' };
+    const links = Array.from({ length: 100 }, (_, i) => ({
+      source: 'hub',
+      target: `node${i}`
+    }));
+    const minRadius = 6;
+    const maxRadius = 20;
+
+    const result = calculateNodeRadius(node, links, minRadius, maxRadius);
+    expect(result).toBe(maxRadius);
+  });
+
+  it('uses default min/max when not provided', () => {
+    const node = { id: 'a' };
+    const links = [{ source: 'a', target: 'b' }];
+
+    const result = calculateNodeRadius(node, links);
+    expect(result).toBeGreaterThanOrEqual(6);
+    expect(result).toBeLessThanOrEqual(20);
+  });
+
+  it('handles subject node with 6 connections (Bowie example)', () => {
+    const subject = { id: 'bowie' };
+    const links = [
+      { source: 'kraftwerk', target: 'bowie' },
+      { source: 'iggy', target: 'bowie' },
+      { source: 'eno', target: 'bowie' },
+      { source: 'burroughs', target: 'bowie' },
+      { source: 'warhol', target: 'bowie' },
+      { source: 'little-richard', target: 'bowie' }
+    ];
+
+    const result = calculateNodeRadius(subject, links, 6, 20);
+    expect(result).toBeGreaterThan(6);
+    expect(result).toBeLessThanOrEqual(20);
   });
 });

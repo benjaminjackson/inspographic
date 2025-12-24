@@ -1,0 +1,23 @@
+body {
+  background-color: #1a1a1a;
+  color: #f5f1e8;
+}
+
+/* Style header and links for dark theme */
+header a,
+a {
+  color: #f5f1e8;
+  text-decoration: none;
+}
+
+header a:hover,
+a:hover {
+  color: #e8b858;
+  text-decoration: none;
+}
+
+/* Remove pointer cursor from header title if it just reloads */
+header h1 a {
+  cursor: default;
+  pointer-events: none;
+}

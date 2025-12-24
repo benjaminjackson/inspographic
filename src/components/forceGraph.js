@@ -1,4 +1,5 @@
 import * as d3 from 'd3-force';
+import { scaleLinear } from 'd3-scale';
 
 /**
  * Calculate radial distance for a given depth and node count
@@ -13,17 +14,71 @@ export function calculateRadialDistance(depth, nodeCountAtDepth, width, height) 
 }
 
 /**
+ * Count the number of connections (links) for a given node
+ * Counts both incoming and outgoing connections
+ */
+export function countNodeConnections(node, links) {
+  return links.filter(link => {
+    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+    return sourceId === node.id || targetId === node.id;
+  }).length;
+}
+
+/**
+ * Calculate node radius based on connection count using D3 scale
+ * Scales linearly from minRadius to maxRadius based on connections
+ */
+export function calculateNodeRadius(node, links, minRadius = 6, maxRadius = 20) {
+  const connectionCount = countNodeConnections(node, links);
+
+  // Find max connections in the dataset for scaling
+  const allNodes = new Set();
+  links.forEach(link => {
+    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+    allNodes.add(sourceId);
+    allNodes.add(targetId);
+  });
+
+  // Calculate max connections
+  const maxConnections = Math.max(
+    1, // at least 1 to avoid division by zero
+    ...Array.from(allNodes).map(nodeId => {
+      const count = links.filter(link => {
+        const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+        const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+        return sourceId === nodeId || targetId === nodeId;
+      }).length;
+      return count;
+    })
+  );
+
+  // Create scale
+  const radiusScale = scaleLinear()
+    .domain([0, maxConnections])
+    .range([minRadius, maxRadius])
+    .clamp(true);
+
+  return radiusScale(connectionCount);
+}
+
+/**
  * Calculate collision radius for a node
  * Depth-based padding prevents crowding at outer rings
+ * Optionally accepts actual visual radius from calculateNodeRadius()
  */
-export function calculateCollisionRadius(node, subjectId) {
-  const isSubject = node.id === subjectId;
-  const visualRadius = isSubject ? 12 : 8;
+export function calculateCollisionRadius(node, subjectId, visualRadius = null) {
   const basePadding = 5;
   const depthPadding = 4;
   const depth = node.depth || 0;
 
-  return visualRadius + basePadding + (depth * depthPadding);
+  // Use provided visualRadius if available, otherwise fall back to legacy values
+  const nodeRadius = visualRadius !== null
+    ? visualRadius
+    : (node.id === subjectId ? 12 : 8);
+
+  return nodeRadius + basePadding + (depth * depthPadding);
 }
 
 /**

@@ -12,6 +12,7 @@
   "dependencies": {
     "@observablehq/framework": "^1.13.0",
     "d3-force": "^3.0.0",
+    "d3-scale": "^4.0.2",
     "dotenv": "^17.2.3",
     "exa-js": "^2.0.12"
   },
