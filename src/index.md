@@ -25,7 +25,7 @@ import {getApiKey, hasApiKey} from "./utils/apiKeyStorage.js";
 ```
 
 ```js
-import {generateInfluenceGraph} from "./api/clientExaApi.js";
+import {generateInfluenceGraph} from "./api/clientInfluenceApi.js";
 ```
 
 ```js

@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use clientInfluenceApi.js instead - this causes CORS errors when calling Exa API directly from browser.
+ * The new implementation uses a server-side proxy to avoid CORS issues.
+ */
+
 import { createSystemPrompt, createUserPrompt } from './prompts/influenceGraphPrompt.js'
 
 /**
