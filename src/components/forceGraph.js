@@ -127,6 +127,21 @@ export function calculateNodeDepths(nodes, links, subjectId) {
   return nodesWithDepth;
 }
 
+/**
+ * Creates a D3 force simulation with parameters tuned for radial graph layout
+ *
+ * Force parameters optimized to prevent linear/flat layouts:
+ * - Charge: -300 (strong repulsion spreads nodes in 2D space)
+ * - Center: 0.05 strength (weak pull prevents linear alignment)
+ * - Radial: 0.5 strength (moderate pull creates visible depth rings)
+ * - Initial positions randomized to break symmetry
+ *
+ * @param {Array} nodes - Graph nodes with depth property
+ * @param {Array} links - Graph edges
+ * @param {number} width - Canvas width (default 800)
+ * @param {number} height - Canvas height (default 600)
+ * @returns {Object} D3 force simulation
+ */
 export function createForceSimulation(nodes, links, width = 800, height = 600) {
   // Pin subject node (depth 0) at center
   const subject = nodes.find(n => n.depth === 0);
@@ -136,6 +151,16 @@ export function createForceSimulation(nodes, links, width = 800, height = 600) {
   }
 
   const subjectId = subject ? subject.id : null;
+
+  // Randomize initial positions for non-subject nodes to break symmetry
+  // Without randomization, symmetric starting positions lead to linear layouts
+  // Positions centered around middle with 80% canvas spread
+  nodes.forEach(node => {
+    if (node.depth > 0) {
+      node.x = width / 2 + (Math.random() - 0.5) * width * 0.8;
+      node.y = height / 2 + (Math.random() - 0.5) * height * 0.8;
+    }
+  });
 
   // Count nodes at each depth for dynamic radius calculation
   const depthCounts = {};
@@ -162,9 +187,15 @@ export function createForceSimulation(nodes, links, width = 800, height = 600) {
     node => calculateCollisionRadius(node, subjectId)
   );
 
+  // Charge force: strong repulsion to spread nodes in 2D space
+  const chargeForce = d3.forceManyBody().strength(-300);
+
+  // Center force: weak pull to keep graph centered without creating linear layout
+  const centerForce = d3.forceCenter(width / 2, height / 2).strength(0.05);
+
   const simulation = d3.forceSimulation(nodes)
-    .force('center', d3.forceCenter(width / 2, height / 2))
-    .force('charge', d3.forceManyBody().strength(-100))
+    .force('center', centerForce)
+    .force('charge', chargeForce)
     .force('link', d3.forceLink(links).id(d => d.id))
     .force('radial', radialForce)
     .force('collision', collisionForce);

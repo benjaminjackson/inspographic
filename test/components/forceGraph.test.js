@@ -152,6 +152,118 @@ describe('collision force', () => {
   });
 });
 
+describe('charge force', () => {
+  it('adds charge force to simulation', () => {
+    const nodes = [
+      { id: 'miles', name: 'Miles Davis', depth: 0 },
+      { id: 'coltrane', name: 'John Coltrane', depth: 1 }
+    ];
+    const links = [{ source: 'coltrane', target: 'miles' }];
+
+    const simulation = createForceSimulation(nodes, links);
+    const chargeForce = simulation.force('charge');
+
+    expect(chargeForce).toBeDefined();
+  });
+
+  it('sets charge force strength to -300 for strong repulsion', () => {
+    const nodes = [
+      { id: 'miles', name: 'Miles Davis', depth: 0 },
+      { id: 'coltrane', name: 'John Coltrane', depth: 1 }
+    ];
+    const links = [{ source: 'coltrane', target: 'miles' }];
+
+    const simulation = createForceSimulation(nodes, links);
+    const chargeForce = simulation.force('charge');
+
+    expect(chargeForce.strength()()).toBe(-300);
+  });
+});
+
+describe('initial position randomization', () => {
+  it('sets randomized initial positions within canvas bounds for non-subject nodes', () => {
+    const nodes = [
+      { id: 'miles', name: 'Miles Davis', depth: 0 },
+      { id: 'coltrane', name: 'John Coltrane', depth: 1 },
+      { id: 'parker', name: 'Charlie Parker', depth: 1 },
+      { id: 'ellington', name: 'Duke Ellington', depth: 1 }
+    ];
+    const links = [
+      { source: 'coltrane', target: 'miles' },
+      { source: 'parker', target: 'miles' },
+      { source: 'ellington', target: 'miles' }
+    ];
+    const width = 800;
+    const height = 600;
+
+    const simulation = createForceSimulation(nodes, links, width, height);
+    const simNodes = simulation.nodes();
+
+    // Non-subject nodes should have initial positions set within canvas
+    const influences = simNodes.filter(n => n.depth > 0);
+    influences.forEach(node => {
+      expect(node.x).toBeDefined();
+      expect(node.y).toBeDefined();
+      // Positions should be within reasonable bounds (80% of canvas, centered)
+      expect(node.x).toBeGreaterThan(width * 0.1);
+      expect(node.x).toBeLessThan(width * 0.9);
+      expect(node.y).toBeGreaterThan(height * 0.1);
+      expect(node.y).toBeLessThan(height * 0.9);
+    });
+
+    // Verify positions are actually different (not all the same)
+    const xPositions = influences.map(n => n.x);
+    const uniqueX = new Set(xPositions);
+    expect(uniqueX.size).toBeGreaterThan(1);
+  });
+
+  it('does not randomize subject node position (uses fixed center)', () => {
+    const nodes = [
+      { id: 'miles', name: 'Miles Davis', depth: 0 },
+      { id: 'coltrane', name: 'John Coltrane', depth: 1 }
+    ];
+    const links = [{ source: 'coltrane', target: 'miles' }];
+    const width = 800;
+    const height = 600;
+
+    const simulation = createForceSimulation(nodes, links, width, height);
+    const simNodes = simulation.nodes();
+    const subject = simNodes.find(n => n.depth === 0);
+
+    // Subject should be pinned at center
+    expect(subject.fx).toBe(width / 2);
+    expect(subject.fy).toBe(height / 2);
+  });
+});
+
+describe('center force', () => {
+  it('adds center force to simulation', () => {
+    const nodes = [
+      { id: 'miles', name: 'Miles Davis', depth: 0 },
+      { id: 'coltrane', name: 'John Coltrane', depth: 1 }
+    ];
+    const links = [{ source: 'coltrane', target: 'miles' }];
+
+    const simulation = createForceSimulation(nodes, links);
+    const centerForce = simulation.force('center');
+
+    expect(centerForce).toBeDefined();
+  });
+
+  it('sets center force strength to 0.05 to prevent linear pull', () => {
+    const nodes = [
+      { id: 'miles', name: 'Miles Davis', depth: 0 },
+      { id: 'coltrane', name: 'John Coltrane', depth: 1 }
+    ];
+    const links = [{ source: 'coltrane', target: 'miles' }];
+
+    const simulation = createForceSimulation(nodes, links);
+    const centerForce = simulation.force('center');
+
+    expect(centerForce.strength()).toBe(0.05);
+  });
+});
+
 describe('calculateRadialDistance', () => {
   it('returns 0 for depth 0 (center)', () => {
     const result = calculateRadialDistance(0, 1, 800, 600);
