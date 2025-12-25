@@ -8,7 +8,9 @@ import { scaleLinear } from 'd3-scale';
 export function calculateRadialDistance(depth, nodeCountAtDepth, width, height) {
   if (depth === 0) return 0;
 
-  const baseRadius = Math.min(width, height) / 4;
+  // Tighter rings: /6 instead of /4 brings nodes closer together
+  // This reduces link lengths between depth levels
+  const baseRadius = Math.min(width, height) / 6;
   const scalingFactor = Math.max(1, Math.sqrt(nodeCountAtDepth / 4));
   return baseRadius * depth * scalingFactor;
 }
@@ -184,7 +186,7 @@ export function createForceSimulation(nodes, links, width = 800, height = 600) {
   });
 
   // Radial force: pulls nodes toward their designated ring
-  // Strength 0.5 = moderate (visible rings with flexibility)
+  // Strength 1.5 = strong (dominant force to maintain circular layout)
   const radialForce = d3.forceRadial(
     node => {
       const depth = node.depth || 0;
@@ -193,7 +195,7 @@ export function createForceSimulation(nodes, links, width = 800, height = 600) {
     },
     width / 2,
     height / 2
-  ).strength(0.5);
+  ).strength(1.5);
 
   // Collision force: prevents node overlap
   // Depth-based padding prevents crowding at outer rings
@@ -201,19 +203,20 @@ export function createForceSimulation(nodes, links, width = 800, height = 600) {
     node => calculateCollisionRadius(node, subjectId)
   );
 
-  // Charge force: strong repulsion to spread nodes in 2D space
-  const chargeForce = d3.forceManyBody().strength(-300);
+  // Charge force: moderate repulsion to prevent overlap without excessive spreading
+  // Reduced from -300 to -100 to allow connected nodes to group closer
+  const chargeForce = d3.forceManyBody().strength(-100);
 
   // Center force: weak pull to keep graph centered without creating linear layout
   const centerForce = d3.forceCenter(width / 2, height / 2).strength(0.05);
 
-  // Link force: longer distance and weaker strength to allow radial layout
-  // Distance of 100 prevents tight chains that override circular positioning
-  // Strength of 0.3 (vs default 1.0) prioritizes radial force over link force
+  // Link force: very weak to pull connected nodes closer without breaking radial layout
+  // Strength 0.1 is subtle - radial force (1.5) remains dominant
+  // This groups connected nodes while maintaining circular rings
   const linkForce = d3.forceLink(links)
     .id(d => d.id)
     .distance(100)
-    .strength(0.3);
+    .strength(0.1);
 
   const simulation = d3.forceSimulation(nodes)
     .force('center', centerForce)
@@ -221,6 +224,14 @@ export function createForceSimulation(nodes, links, width = 800, height = 600) {
     .force('link', linkForce)
     .force('radial', radialForce)
     .force('collision', collisionForce);
+
+  // Re-initialize forces to lock in parameters
+  simulation.force('radial').initialize(nodes);
+  simulation.force('collision').initialize(nodes);
+  simulation.force('link').initialize(links);
+
+  // Start hot to ensure simulation runs immediately
+  simulation.alpha(1).restart();
 
   return simulation;
 }

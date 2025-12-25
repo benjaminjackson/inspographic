@@ -123,7 +123,7 @@ describe('radial force', () => {
     expect(radialForce).toBeDefined();
   });
 
-  it('sets radial force strength to 0.5 (moderate)', () => {
+  it('sets radial force strength to 1.5 (strong) to maintain circular rings', () => {
     const nodes = [
       { id: 'miles', name: 'Miles Davis', depth: 0 },
       { id: 'coltrane', name: 'John Coltrane', depth: 1 }
@@ -133,7 +133,7 @@ describe('radial force', () => {
     const simulation = createForceSimulation(nodes, links);
     const radialForce = simulation.force('radial');
 
-    expect(radialForce.strength()()).toBe(0.5);
+    expect(radialForce.strength()()).toBe(1.5);
   });
 });
 
@@ -166,7 +166,7 @@ describe('charge force', () => {
     expect(chargeForce).toBeDefined();
   });
 
-  it('sets charge force strength to -300 for strong repulsion', () => {
+  it('sets charge force strength to -100 for moderate repulsion', () => {
     const nodes = [
       { id: 'miles', name: 'Miles Davis', depth: 0 },
       { id: 'coltrane', name: 'John Coltrane', depth: 1 }
@@ -176,7 +176,7 @@ describe('charge force', () => {
     const simulation = createForceSimulation(nodes, links);
     const chargeForce = simulation.force('charge');
 
-    expect(chargeForce.strength()()).toBe(-300);
+    expect(chargeForce.strength()()).toBe(-100);
   });
 });
 
@@ -277,7 +277,7 @@ describe('link force', () => {
     expect(linkForce.distance()()).toBe(100);
   });
 
-  it('weakens link strength to prioritize radial layout over chains', () => {
+  it('sets weak link force to group connected nodes without breaking radial layout', () => {
     const nodes = [
       { id: 'miles', name: 'Miles Davis', depth: 0 },
       { id: 'coltrane', name: 'John Coltrane', depth: 1 }
@@ -287,10 +287,10 @@ describe('link force', () => {
     const simulation = createForceSimulation(nodes, links);
     const linkForce = simulation.force('link');
 
-    // Link strength is configured (implementation detail)
-    // The key is that distance is long enough to prevent chains
+    // Link force is weak (0.1) to pull connected nodes closer without overriding radial layout
+    // Radial force (1.5) remains dominant
     expect(linkForce).toBeDefined();
-    expect(typeof linkForce.strength()).toBe('function');
+    expect(linkForce.distance()()).toBe(100);
   });
 });
 
@@ -331,10 +331,10 @@ describe('calculateRadialDistance', () => {
   it('calculates radius for depth 1 with few nodes', () => {
     const width = 800;
     const height = 600;
-    const baseRadius = Math.min(width, height) / 4; // 150
+    const baseRadius = Math.min(width, height) / 6; // 100 (tighter rings)
     const nodeCount = 2;
     const scalingFactor = Math.max(1, Math.sqrt(nodeCount / 4)); // sqrt(0.5) = 0.707, but max with 1 = 1
-    const expected = baseRadius * 1 * scalingFactor; // 150 * 1 * 1 = 150
+    const expected = baseRadius * 1 * scalingFactor; // 100 * 1 * 1 = 100
 
     const result = calculateRadialDistance(1, nodeCount, width, height);
     expect(result).toBe(expected);
@@ -343,10 +343,10 @@ describe('calculateRadialDistance', () => {
   it('calculates radius for depth 1 with many nodes', () => {
     const width = 800;
     const height = 600;
-    const baseRadius = Math.min(width, height) / 4; // 150
+    const baseRadius = Math.min(width, height) / 6; // 100 (tighter rings)
     const nodeCount = 16;
     const scalingFactor = Math.max(1, Math.sqrt(nodeCount / 4)); // sqrt(4) = 2
-    const expected = baseRadius * 1 * scalingFactor; // 150 * 1 * 2 = 300
+    const expected = baseRadius * 1 * scalingFactor; // 100 * 1 * 2 = 200
 
     const result = calculateRadialDistance(1, nodeCount, width, height);
     expect(result).toBe(expected);
@@ -355,10 +355,10 @@ describe('calculateRadialDistance', () => {
   it('calculates radius for depth 2', () => {
     const width = 800;
     const height = 600;
-    const baseRadius = Math.min(width, height) / 4; // 150
+    const baseRadius = Math.min(width, height) / 6; // 100 (tighter rings)
     const nodeCount = 4;
     const scalingFactor = Math.max(1, Math.sqrt(nodeCount / 4)); // sqrt(1) = 1
-    const expected = baseRadius * 2 * scalingFactor; // 150 * 2 * 1 = 300
+    const expected = baseRadius * 2 * scalingFactor; // 100 * 2 * 1 = 200
 
     const result = calculateRadialDistance(2, nodeCount, width, height);
     expect(result).toBe(expected);
@@ -366,14 +366,14 @@ describe('calculateRadialDistance', () => {
 
   it('handles edge case: single node', () => {
     const result = calculateRadialDistance(1, 1, 800, 600);
-    const expected = 150 * 1 * 1; // baseRadius * depth * max(1, sqrt(0.25))
+    const expected = 100 * 1 * 1; // baseRadius (100) * depth * max(1, sqrt(0.25))
     expect(result).toBe(expected);
   });
 
   it('handles edge case: many nodes (20)', () => {
     const width = 800;
     const height = 600;
-    const baseRadius = 150;
+    const baseRadius = 100; // Updated to /6
     const nodeCount = 20;
     const scalingFactor = Math.max(1, Math.sqrt(nodeCount / 4)); // sqrt(5) ≈ 2.236
     const expected = baseRadius * 1 * scalingFactor;
