@@ -1,6 +1,10 @@
 import express from 'express'
 import cors from 'cors'
 import { generateInfluenceGraphWithKey } from './influenceGraphAdapter.js'
+import { withCache, initializeCacheDirectory } from './cacheMiddleware.js'
+
+// Initialize cache directory on startup
+await initializeCacheDirectory()
 
 const app = express()
 
@@ -38,8 +42,10 @@ app.post('/api/influence-graph', async (req, res) => {
   }
 
   try {
-    // Generate influence graph using provided API key
-    const graph = await generateInfluenceGraphWithKey(personName, apiKey)
+    // Generate influence graph using provided API key (with caching)
+    const graph = await withCache(personName, () =>
+      generateInfluenceGraphWithKey(personName, apiKey)
+    )
     res.json(graph)
   } catch (error) {
     // Handle errors from the generator
