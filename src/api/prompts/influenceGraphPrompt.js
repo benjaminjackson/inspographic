@@ -25,8 +25,9 @@ Instructions:
 3. Create directed links showing who influenced whom
 4. If information is limited, return what you can find
 5. Ensure all node IDs in links exist in the nodes array
+6. Works for any field: music, literature, science, art, etc.
 
-Example for "Miles Davis":
+Example for "Miles Davis" (musician):
 {
   "subject": "Miles Davis",
   "nodes": [
@@ -41,6 +42,24 @@ Example for "Miles Davis":
     {"source": "dizzy-gillespie", "target": "miles-davis"},
     {"source": "louis-armstrong", "target": "dizzy-gillespie"},
     {"source": "duke-ellington", "target": "charlie-parker"}
+  ]
+}
+
+Example for "Ursula K. Le Guin" (author):
+{
+  "subject": "Ursula K. Le Guin",
+  "nodes": [
+    {"id": "ursula-k-le-guin", "name": "Ursula K. Le Guin", "depth": 0},
+    {"id": "virginia-woolf", "name": "Virginia Woolf", "depth": 1},
+    {"id": "j-r-r-tolkien", "name": "J.R.R. Tolkien", "depth": 1},
+    {"id": "james-joyce", "name": "James Joyce", "depth": 2},
+    {"id": "lord-dunsany", "name": "Lord Dunsany", "depth": 2}
+  ],
+  "links": [
+    {"source": "virginia-woolf", "target": "ursula-k-le-guin"},
+    {"source": "j-r-r-tolkien", "target": "ursula-k-le-guin"},
+    {"source": "james-joyce", "target": "virginia-woolf"},
+    {"source": "lord-dunsany", "target": "j-r-r-tolkien"}
   ]
 }`
 }

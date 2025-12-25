@@ -28,6 +28,24 @@ describe('influenceGraphPrompt', () => {
 
       expect(prompt.toLowerCase()).toContain('no markdown')
     })
+
+    it('includes diverse examples across different fields', () => {
+      const prompt = createSystemPrompt()
+
+      // Should have musician example
+      expect(prompt).toContain('Miles Davis')
+      expect(prompt).toContain('musician')
+
+      // Should have author example to avoid music bias
+      expect(prompt).toContain('Ursula K. Le Guin')
+      expect(prompt).toContain('author')
+    })
+
+    it('explicitly states it works for any field', () => {
+      const prompt = createSystemPrompt()
+
+      expect(prompt.toLowerCase()).toContain('any field')
+    })
   })
 
   describe('createUserPrompt', () => {
