@@ -109,7 +109,7 @@ document.body.appendChild(panelElement);
 
   const input = container.append("input")
     .attr("type", "text")
-    .attr("placeholder", "Enter a person's name (e.g., Miles Davis)")
+    .attr("placeholder", "e.g., 'Miles Davis' or 'John Williams composer'")
     .style("flex", "1")
     .style("padding", "10px 12px")
     .style("border", "1px solid #ccc")
@@ -163,6 +163,19 @@ document.body.appendChild(panelElement);
     });
 
   return container.node();
+})()
+```
+
+```js
+// Help text for common names
+(() => {
+  const helpText = d3.create("div")
+    .style("margin-bottom", "20px")
+    .style("color", "#666")
+    .style("font-size", "13px")
+    .text("💡 Tip: Add context for common names (e.g., 'John Williams composer' vs 'John Williams')");
+
+  return helpText.node();
 })()
 ```
 
