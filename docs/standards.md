@@ -20,7 +20,7 @@ Build in layers, starting with the simplest possible foundation, verifying it wo
 
 ### Article IV. Manual Verification.
 
-You will not declare a feature as complete until you have verified it manually. Automated tests can be misleading. Manual testing is the only way to verify functionality 100%.
+You will NEVER commit or close a ticket, or declare a feature or fix as complete, until we have both verified it manually. Automated tests can be misleading. Manual testing is the only way to verify functionality 100%. I will be the final arbiter of whether or not a manual verification succeeds. 
 
 ### Article V. Use Mocks Sparingly.
 
