@@ -34,29 +34,6 @@ function validateInput(personName) {
 }
 
 /**
- * Sanitizes a node object to only include schema-valid properties.
- * This prevents API responses from including extra properties that violate the schema.
- *
- * @param {Object} node - The node to sanitize
- * @returns {Object} A new node object with only valid properties
- */
-export function sanitizeNode(node) {
-  const sanitized = {
-    id: node.id,
-    name: node.name,
-    depth: node.depth
-  }
-
-  // Include optional properties if they exist
-  if (node.size !== undefined) sanitized.size = node.size
-  if (node.description !== undefined) sanitized.description = node.description
-  if (node.url !== undefined) sanitized.url = node.url
-  if (node.metadata !== undefined) sanitized.metadata = node.metadata
-
-  return sanitized
-}
-
-/**
  * Calls Exa API to get influences for a specific person.
  *
  * @param {OpenAI} client - The Exa API client
@@ -75,7 +52,8 @@ async function getInfluencesForPerson(client, personName, targetDepth) {
       { role: 'user', content: userPrompt }
     ],
     extra_body: {
-      text: true
+      text: true,
+      outputSchema: schema
     }
   })
 
@@ -86,7 +64,7 @@ async function getInfluencesForPerson(client, personName, targetDepth) {
   // Extract depth-1 nodes from this call and adjust their depth
   const influences = result.nodes
     .filter(n => n.depth === 1)
-    .map(n => sanitizeNode({ ...n, depth: targetDepth }))
+    .map(n => ({ ...n, depth: targetDepth }))
 
   return influences
 }
@@ -129,7 +107,8 @@ export async function generateInfluenceGraphWithKey(personName, apiKey) {
         { role: 'user', content: userPrompt }
       ],
       extra_body: {
-        text: true
+        text: true,
+        outputSchema: schema
       }
     })
 
@@ -137,8 +116,8 @@ export async function generateInfluenceGraphWithKey(personName, apiKey) {
     const level1Cleaned = stripMarkdown(level1Content)
     const level1Result = JSON.parse(level1Cleaned)
 
-    // Start building the final graph - sanitize all nodes from API
-    const allNodes = level1Result.nodes.map(n => sanitizeNode(n))
+    // Start building the final graph
+    const allNodes = [...level1Result.nodes]
     const allLinks = [...level1Result.links]
 
     // Get depth-1 nodes (direct influences)
@@ -152,7 +131,7 @@ export async function generateInfluenceGraphWithKey(personName, apiKey) {
       try {
         const depth2Influences = await getInfluencesForPerson(client, depth1Node.name, 2)
 
-        // Add new nodes (avoid duplicates) - already sanitized by getInfluencesForPerson
+        // Add new nodes (avoid duplicates)
         for (const node of depth2Influences) {
           if (!allNodes.find(n => n.id === node.id)) {
             allNodes.push(node)
