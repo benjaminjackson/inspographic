@@ -40,9 +40,15 @@ function validateInput(personName) {
  * @param {OpenAI} client - The Exa API client
  * @param {string} personName - The person to get influences for
  * @param {number} targetDepth - The depth these influences should have in the final graph
+ * @param {Function} onProgress - Optional callback to report progress
  * @returns {Promise<Array>} Array of influence nodes
  */
-async function getInfluencesForPerson(client, personName, targetDepth) {
+async function getInfluencesForPerson(client, personName, targetDepth, onProgress) {
+  // Report progress if callback provided
+  if (onProgress) {
+    onProgress(personName)
+  }
+
   const systemPrompt = createSystemPrompt()
   const userPrompt = createUserPrompt(personName)
 
@@ -76,10 +82,11 @@ async function getInfluencesForPerson(client, personName, targetDepth) {
  *
  * @param {string} personName - The name of the person to generate an influence graph for
  * @param {string} apiKey - The Exa API key to use
+ * @param {Function} onProgress - Optional callback to report progress (receives entity name)
  * @returns {Promise<Object>} The influence graph object matching our schema
  * @throws {Error} If the API call fails or the response is invalid
  */
-export async function generateInfluenceGraphWithKey(personName, apiKey) {
+export async function generateInfluenceGraphWithKey(personName, apiKey, onProgress = null) {
   // Validate input
   validateInput(personName)
 
@@ -98,6 +105,10 @@ export async function generateInfluenceGraphWithKey(personName, apiKey) {
 
   try {
     // Level 1: Get subject and their direct influences (depth 0-1)
+    if (onProgress) {
+      onProgress(personName)
+    }
+
     const systemPrompt = createSystemPrompt()
     const userPrompt = createUserPrompt(personName)
 
@@ -130,7 +141,7 @@ export async function generateInfluenceGraphWithKey(personName, apiKey) {
 
     for (const depth1Node of depth1ToQuery) {
       try {
-        const depth2Influences = await getInfluencesForPerson(client, depth1Node.name, 2)
+        const depth2Influences = await getInfluencesForPerson(client, depth1Node.name, 2, onProgress)
 
         // Add new nodes (avoid duplicates)
         for (const node of depth2Influences) {

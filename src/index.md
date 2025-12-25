@@ -141,18 +141,24 @@ document.body.appendChild(panelElement);
       }
 
       button.text("Generating...").attr("disabled", true);
-      renderer.showLoading();
+      input.attr("disabled", true);
+      renderer.showLoading(personName);
 
       try {
-        const result = await generateInfluenceGraph(personName, apiKey);
+        const result = await generateInfluenceGraph(
+          personName,
+          apiKey,
+          (entity) => renderer.showLoading(entity) // Update loading text for each entity
+        );
         // Update hash (for sharing) WITHOUT reload
         window.location.hash = `data=${encodeURIComponent(JSON.stringify(result))}`;
         // Reactive update
         renderer.update(result);
-        button.text("Generate Graph").attr("disabled", null);
       } catch (error) {
         renderer.showError(`Error: ${error.message}`);
+      } finally {
         button.text("Generate Graph").attr("disabled", null);
+        input.attr("disabled", null);
       }
     });
 

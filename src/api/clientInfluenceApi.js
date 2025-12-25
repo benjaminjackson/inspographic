@@ -34,13 +34,15 @@ function validateApiKey(apiKey) {
 
 /**
  * Generates an influence graph for a given person by calling the local proxy server.
+ * Streams progress updates via Server-Sent Events.
  *
  * @param {string} personName - The name of the person to generate an influence graph for
  * @param {string} apiKey - The Exa API key to use
+ * @param {Function} onProgress - Callback function called with entity name as each is researched
  * @returns {Promise<Object>} The influence graph object
  * @throws {Error} If the API call fails or validation fails
  */
-export async function generateInfluenceGraph(personName, apiKey) {
+export async function generateInfluenceGraph(personName, apiKey, onProgress = null) {
   // Validate inputs
   validateInput(personName)
   validateApiKey(apiKey)
@@ -59,11 +61,43 @@ export async function generateInfluenceGraph(personName, apiKey) {
       throw new Error(`API request failed: ${response.status} ${response.statusText}`)
     }
 
-    const data = await response.json()
-    return data
+    // Read SSE stream
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let result = null
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() // Keep incomplete line in buffer
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = JSON.parse(line.slice(6))
+
+          if (data.type === 'progress' && onProgress) {
+            onProgress(data.entity)
+          } else if (data.type === 'complete') {
+            result = data.data
+          } else if (data.type === 'error') {
+            throw new Error(data.message)
+          }
+        }
+      }
+    }
+
+    if (!result) {
+      throw new Error('No data received from server')
+    }
+
+    return result
   } catch (error) {
     // Re-throw with context if not already a formatted error
-    if (error.message.startsWith('API request failed:')) {
+    if (error.message.startsWith('API request failed:') || error.message.startsWith('No data received')) {
       throw error
     }
     throw new Error(`Failed to generate influence graph: ${error.message}`)

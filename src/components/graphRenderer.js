@@ -15,8 +15,10 @@ export function createGraphRenderer(width = 800, height = 600) {
   let nodeSelection
   let labelSelection
   let loadingElement
+  let loadingTextElement
   let errorElement
   let errorTimer
+  let currentSimulation
 
   function render() {
     // Create container div
@@ -73,11 +75,11 @@ export function createGraphRenderer(width = 800, height = 600) {
     loadingElement.appendChild(spinner)
 
     // Loading text
-    const loadingText = document.createElement('div')
-    loadingText.textContent = 'Loading graph...'
-    loadingText.style.color = 'white'
-    loadingText.style.fontSize = '16px'
-    loadingElement.appendChild(loadingText)
+    loadingTextElement = document.createElement('div')
+    loadingTextElement.textContent = 'Loading graph...'
+    loadingTextElement.style.color = 'white'
+    loadingTextElement.style.fontSize = '16px'
+    loadingElement.appendChild(loadingTextElement)
 
     // Add keyframes animation (only once)
     if (!document.getElementById('spinner-keyframes')) {
@@ -122,6 +124,13 @@ export function createGraphRenderer(width = 800, height = 600) {
       }
     }
 
+    // Clean up previous simulation
+    if (currentSimulation) {
+      currentSimulation.on("tick", null)
+      currentSimulation.on("end", null)
+      currentSimulation.stop()
+    }
+
     const nodes = graphData.nodes
     const links = graphData.links
 
@@ -158,10 +167,10 @@ export function createGraphRenderer(width = 800, height = 600) {
       .attr("dy", 25)
 
     // Create and start force simulation
-    const simulation = createForceSimulation(nodes, links, width, height)
+    currentSimulation = createForceSimulation(nodes, links, width, height)
 
     // Update positions on each tick
-    simulation.on("tick", () => {
+    currentSimulation.on("tick", () => {
       linkSelection
         .attr("x1", d => d.source.x)
         .attr("y1", d => d.source.y)
@@ -178,8 +187,15 @@ export function createGraphRenderer(width = 800, height = 600) {
     })
   }
 
-  function showLoading() {
-    // Show loading overlay (SVG stays visible underneath)
+  function showLoading(entityName = null) {
+    // Reset loading text and show overlay
+    if (loadingTextElement) {
+      if (entityName) {
+        loadingTextElement.textContent = `Researching ${entityName}...`
+      } else {
+        loadingTextElement.textContent = 'Loading graph...'
+      }
+    }
     if (loadingElement) {
       loadingElement.style.display = 'flex'
     }

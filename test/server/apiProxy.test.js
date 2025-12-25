@@ -5,6 +5,20 @@ import { join } from 'path'
 import { existsSync, rmSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { getCachePath, initializeCacheDirectory } from '../../server/cacheMiddleware.js'
 
+// Helper to parse SSE response
+function parseSSEResponse(text) {
+  const lines = text.split('\n')
+  for (const line of lines) {
+    if (line.startsWith('data: ')) {
+      const data = JSON.parse(line.slice(6))
+      if (data.type === 'complete') {
+        return data.data
+      }
+    }
+  }
+  return null
+}
+
 describe('API Proxy Server', () => {
   describe('Health check endpoint', () => {
     it('GET /api/health returns status ok', async () => {
@@ -104,7 +118,8 @@ describe('API Proxy Server', () => {
         .send({ personName: 'Miles Davis' })
         .expect(200)
 
-      expect(response.body).toEqual(mockGraph)
+      const result = parseSSEResponse(response.text)
+      expect(result).toEqual(mockGraph)
 
       if (originalEnableCache !== undefined) {
         process.env.ENABLE_CACHE = originalEnableCache
@@ -135,7 +150,8 @@ describe('API Proxy Server', () => {
         .send({ personName: 'Björk' })
         .expect(200)
 
-      expect(response.body).toEqual(mockGraph)
+      const result = parseSSEResponse(response.text)
+      expect(result).toEqual(mockGraph)
       expect(cachePath).toContain('bjork.json')
 
       if (originalEnableCache !== undefined) {
@@ -163,7 +179,8 @@ describe('API Proxy Server', () => {
         .send({ personName: 'Miles  Davis' })
         .expect(200)
 
-      expect(response.body).toEqual(mockGraph)
+      const result = parseSSEResponse(response.text)
+      expect(result).toEqual(mockGraph)
 
       if (originalEnableCache !== undefined) {
         process.env.ENABLE_CACHE = originalEnableCache

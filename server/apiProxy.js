@@ -20,7 +20,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' })
 })
 
-// Influence graph endpoint
+// Influence graph endpoint with SSE progress updates
 app.post('/api/influence-graph', async (req, res) => {
   // Validate Authorization header
   const authHeader = req.headers.authorization
@@ -41,19 +41,30 @@ app.post('/api/influence-graph', async (req, res) => {
     })
   }
 
+  // Set up SSE headers
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+
+  // Progress callback to send updates
+  const onProgress = (entityName) => {
+    res.write(`data: ${JSON.stringify({ type: 'progress', entity: entityName })}\n\n`)
+  }
+
   try {
     // Generate influence graph using provided API key (with caching)
     const graph = await withCache(personName, () =>
-      generateInfluenceGraphWithKey(personName, apiKey)
+      generateInfluenceGraphWithKey(personName, apiKey, onProgress)
     )
-    res.json(graph)
+
+    // Send final result
+    res.write(`data: ${JSON.stringify({ type: 'complete', data: graph })}\n\n`)
+    res.end()
   } catch (error) {
     // Handle errors from the generator
     console.error('Error generating influence graph:', error)
-    res.status(500).json({
-      error: 'Internal Server Error: Failed to generate influence graph',
-      message: error.message
-    })
+    res.write(`data: ${JSON.stringify({ type: 'error', message: error.message })}\n\n`)
+    res.end()
   }
 })
 

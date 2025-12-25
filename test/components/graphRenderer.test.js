@@ -144,7 +144,7 @@ describe('graphRenderer', () => {
       expect(loadingEl.style.display).toBe('flex')
     })
 
-    it('update() hides loading overlay', () => {
+    it('update() hides loading overlay immediately', () => {
       const mockGraphData = {
         subject: "Test",
         nodes: [{ id: "test", name: "Test", depth: 0 }],
@@ -155,7 +155,20 @@ describe('graphRenderer', () => {
       renderer.update(mockGraphData)
 
       const loadingEl = container.querySelector('.loading-message')
+      // Loading should be hidden immediately
       expect(loadingEl.style.display).toBe('none')
+    })
+
+    it('showLoading() resets text to "Loading graph..." when no entity provided', () => {
+      renderer.showLoading()
+      const loadingEl = container.querySelector('.loading-message')
+      expect(loadingEl.textContent).toContain('Loading graph')
+    })
+
+    it('showLoading() shows "Researching [entity]..." when entity provided', () => {
+      renderer.showLoading('Miles Davis')
+      const loadingEl = container.querySelector('.loading-message')
+      expect(loadingEl.textContent).toContain('Researching Miles Davis')
     })
   })
 

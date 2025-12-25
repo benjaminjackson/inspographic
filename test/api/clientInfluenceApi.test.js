@@ -1,6 +1,21 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { generateInfluenceGraph } from '../../src/api/clientInfluenceApi.js'
 
+// Helper to create mock SSE stream
+function createMockSSEStream(events) {
+  const encoder = new TextEncoder()
+  const stream = new ReadableStream({
+    start(controller) {
+      for (const event of events) {
+        const line = `data: ${JSON.stringify(event)}\n\n`
+        controller.enqueue(encoder.encode(line))
+      }
+      controller.close()
+    }
+  })
+  return stream
+}
+
 describe('clientInfluenceApi', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
@@ -19,13 +34,18 @@ describe('clientInfluenceApi', () => {
     })
 
     it('calls local proxy server with correct parameters', async () => {
+      const mockData = {
+        subject: 'Test Person',
+        nodes: [{ id: 'test', name: 'Test Person', depth: 0 }],
+        links: []
+      }
+
       const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValueOnce({
         ok: true,
-        json: async () => ({
-          subject: 'Test Person',
-          nodes: [{ id: 'test', name: 'Test Person', depth: 0 }],
-          links: []
-        })
+        body: createMockSSEStream([
+          { type: 'progress', entity: 'Test Person' },
+          { type: 'complete', data: mockData }
+        ])
       })
 
       await generateInfluenceGraph('Test Person', 'test-api-key')
@@ -44,18 +64,24 @@ describe('clientInfluenceApi', () => {
     })
 
     it('returns valid influence graph structure', async () => {
+      const mockData = {
+        subject: 'Miles Davis',
+        nodes: [
+          { id: 'miles-davis', name: 'Miles Davis', depth: 0 },
+          { id: 'charlie-parker', name: 'Charlie Parker', depth: 1 }
+        ],
+        links: [
+          { source: 'charlie-parker', target: 'miles-davis' }
+        ]
+      }
+
       vi.spyOn(global, 'fetch').mockResolvedValueOnce({
         ok: true,
-        json: async () => ({
-          subject: 'Miles Davis',
-          nodes: [
-            { id: 'miles-davis', name: 'Miles Davis', depth: 0 },
-            { id: 'charlie-parker', name: 'Charlie Parker', depth: 1 }
-          ],
-          links: [
-            { source: 'charlie-parker', target: 'miles-davis' }
-          ]
-        })
+        body: createMockSSEStream([
+          { type: 'progress', entity: 'Miles Davis' },
+          { type: 'progress', entity: 'Charlie Parker' },
+          { type: 'complete', data: mockData }
+        ])
       })
 
       const result = await generateInfluenceGraph('Miles Davis', 'test-key')
