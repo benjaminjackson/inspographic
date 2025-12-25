@@ -20,6 +20,7 @@ describe('API Proxy Server', () => {
 
       const response = await request(app)
         .get('/api/health')
+        .set('Origin', 'http://localhost:3000')
         .expect(200)
 
       expect(response.headers['access-control-allow-origin']).toBeDefined()
