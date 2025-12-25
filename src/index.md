@@ -274,6 +274,10 @@ display(graphContainer);
     { label: "Export PNG", action: () => {
       const subject = getSubject();
       renderer.exportPng(`${subject}-influences.png`, 2);
+    }},
+    { label: "Export PDF", action: () => {
+      const subject = getSubject();
+      renderer.exportPdf(`${subject}-influences.pdf`);
     }}
   ];
 

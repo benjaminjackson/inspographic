@@ -20,7 +20,8 @@
     "dotenv": "^17.2.3",
     "exa-js": "^2.0.12",
     "express": "^5.2.1",
-    "jspdf": "^3.0.4"
+    "jspdf": "^3.0.4",
+    "svg2pdf.js": "^2.6.0"
   },
   "devDependencies": {
     "ajv": "^8.17.0",

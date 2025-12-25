@@ -3,6 +3,7 @@ import { colors, typography } from "../theme.js"
 import { createForceSimulation, calculateNodeRadius } from "./forceGraph.js"
 import { downloadFile } from "../utils/downloadFile.js"
 import jsPDF from "jspdf"
+import "svg2pdf.js"
 
 export function createGraphRenderer(width = 800, height = 600) {
   let container
@@ -273,64 +274,64 @@ export function createGraphRenderer(width = 800, height = 600) {
   }
 
   /**
-   * Export graph as PDF
+   * Export graph as vector PDF (A3 landscape)
    * @param {string} filename - Output filename
    */
-  function exportPdf(filename = 'graph.pdf') {
+  async function exportPdf(filename = 'graph.pdf') {
     if (!svg) {
       showError('No graph to export')
       return
     }
 
-    // Create a canvas with 2x resolution for better quality
-    const scale = 2
-    const canvas = document.createElement('canvas')
-    const scaledWidth = width * scale
-    const scaledHeight = height * scale
-    canvas.width = scaledWidth
-    canvas.height = scaledHeight
+    try {
+      // A3 landscape: 420mm x 297mm = 1587.4 x 1122.5 pts (at 96 DPI)
+      const pageWidth = 420
+      const pageHeight = 297
+      const margin = 20 // mm
 
-    const ctx = canvas.getContext('2d')
-
-    // Create an image from the SVG
-    const svgData = new XMLSerializer().serializeToString(svg)
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
-    const url = URL.createObjectURL(svgBlob)
-
-    const img = new Image()
-    img.onload = () => {
-      // Scale the context for higher resolution
-      ctx.scale(scale, scale)
-
-      // Draw the image on the canvas
-      ctx.drawImage(img, 0, 0)
-
-      // Convert to image data URL
-      const imgData = canvas.toDataURL('image/png')
-
-      // Create PDF with same aspect ratio
+      // Create PDF
       const pdf = new jsPDF({
-        orientation: width > height ? 'landscape' : 'portrait',
-        unit: 'px',
-        format: [width, height]
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a3'
       })
 
-      // Add image to PDF
-      pdf.addImage(imgData, 'PNG', 0, 0, width, height)
+      // Calculate available space after margins
+      const availableWidth = pageWidth - (margin * 2)
+      const availableHeight = pageHeight - (margin * 2)
+
+      // Calculate scaling to fit graph while preserving aspect ratio
+      const graphAspect = width / height
+      const availableAspect = availableWidth / availableHeight
+
+      let scaledWidth, scaledHeight
+      if (graphAspect > availableAspect) {
+        // Graph is wider - constrain by width
+        scaledWidth = availableWidth
+        scaledHeight = availableWidth / graphAspect
+      } else {
+        // Graph is taller - constrain by height
+        scaledHeight = availableHeight
+        scaledWidth = availableHeight * graphAspect
+      }
+
+      // Center the graph on the page
+      const x = margin + (availableWidth - scaledWidth) / 2
+      const y = margin + (availableHeight - scaledHeight) / 2
+
+      // Embed SVG as vector
+      await pdf.svg(svg, {
+        x: x,
+        y: y,
+        width: scaledWidth,
+        height: scaledHeight
+      })
 
       // Save PDF
       pdf.save(filename)
-
-      // Clean up
-      URL.revokeObjectURL(url)
+    } catch (error) {
+      showError('Failed to export PDF: ' + error.message)
     }
-
-    img.onerror = () => {
-      showError('Failed to export PDF')
-      URL.revokeObjectURL(url)
-    }
-
-    img.src = url
   }
 
   return { render, update, showLoading, showError, getSvg, exportSvg, exportPng, exportPdf }
