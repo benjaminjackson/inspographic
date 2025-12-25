@@ -233,4 +233,41 @@ describe('graphRenderer', () => {
       expect(errorEl.style.display).toBe('none')
     })
   })
+
+  describe('export functionality', () => {
+    let renderer
+    let container
+
+    const mockGraphData = {
+      subject: "Test",
+      nodes: [{ id: "test", name: "Test", depth: 0 }],
+      links: []
+    }
+
+    beforeEach(() => {
+      renderer = createGraphRenderer(800, 600)
+      container = renderer.render()
+      renderer.update(mockGraphData)
+    })
+
+    it('exportSvg method exists', () => {
+      expect(renderer.exportSvg).toBeDefined()
+      expect(typeof renderer.exportSvg).toBe('function')
+    })
+
+    it('exportPng method exists', () => {
+      expect(renderer.exportPng).toBeDefined()
+      expect(typeof renderer.exportPng).toBe('function')
+    })
+
+    it('exportPdf method exists', () => {
+      expect(renderer.exportPdf).toBeDefined()
+      expect(typeof renderer.exportPdf).toBe('function')
+    })
+
+    it('getSvg returns SVG element', () => {
+      const svg = renderer.getSvg()
+      expect(svg).toBeInstanceOf(SVGElement)
+    })
+  })
 })

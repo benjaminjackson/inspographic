@@ -211,11 +211,34 @@ display(graphContainer);
 ```
 
 ```js
-// Export SVG button
+// Export dropdown
 (() => {
-  const button = d3.create("button")
-    .text("Export SVG")
+  const container = d3.create("div")
     .style("margin-top", "12px")
+    .style("position", "relative")
+    .style("display", "inline-block");
+
+  // Helper to get subject from hash
+  function getSubject() {
+    const hash = window.location.hash;
+    let subject = 'graph';
+    if (hash.startsWith('#data=')) {
+      try {
+        const data = JSON.parse(decodeURIComponent(hash.slice(6)));
+        if (data.subject) {
+          subject = data.subject.toLowerCase().replace(/\s+/g, '-');
+        }
+      } catch (e) {
+        // Use default
+      }
+    }
+    return subject;
+  }
+
+  let dropdownVisible = false;
+
+  const exportButton = container.append("button")
+    .text("Export ▼")
     .style("padding", "8px 16px")
     .style("background", "#444")
     .style("color", "white")
@@ -223,22 +246,72 @@ display(graphContainer);
     .style("border-radius", "4px")
     .style("cursor", "pointer")
     .style("font-size", "14px")
-    .on("click", () => {
-      // Get subject from current graph data
-      const hash = window.location.hash;
-      let subject = 'graph';
-      if (hash.startsWith('#data=')) {
-        try {
-          const data = JSON.parse(decodeURIComponent(hash.slice(6)));
-          if (data.subject) {
-            subject = data.subject.toLowerCase().replace(/\s+/g, '-');
-          }
-        } catch (e) {
-          // Use default
-        }
-      }
-      renderer.exportSvg(`${subject}-influences.svg`);
+    .on("click", (event) => {
+      event.stopPropagation();
+      dropdownVisible = !dropdownVisible;
+      dropdown.style("display", dropdownVisible ? "block" : "none");
+      exportButton.text(dropdownVisible ? "Export ▲" : "Export ▼");
     });
-  return button.node();
+
+  // Dropdown menu
+  const dropdown = container.append("div")
+    .style("display", "none")
+    .style("position", "absolute")
+    .style("top", "100%")
+    .style("left", "0")
+    .style("margin-top", "4px")
+    .style("background", "#333")
+    .style("border-radius", "4px")
+    .style("box-shadow", "0 2px 8px rgba(0,0,0,0.3)")
+    .style("z-index", "1000")
+    .style("min-width", "140px");
+
+  const exportOptions = [
+    { label: "Export SVG", action: () => {
+      const subject = getSubject();
+      renderer.exportSvg(`${subject}-influences.svg`);
+    }},
+    { label: "Export PNG", action: () => {
+      const subject = getSubject();
+      renderer.exportPng(`${subject}-influences.png`, 2);
+    }}
+  ];
+
+  exportOptions.forEach(({ label, action }) => {
+    dropdown.append("button")
+      .text(label)
+      .style("display", "block")
+      .style("width", "100%")
+      .style("padding", "8px 16px")
+      .style("background", "transparent")
+      .style("color", "white")
+      .style("border", "none")
+      .style("text-align", "left")
+      .style("cursor", "pointer")
+      .style("font-size", "14px")
+      .on("mouseover", function() {
+        d3.select(this).style("background", "#444");
+      })
+      .on("mouseout", function() {
+        d3.select(this).style("background", "transparent");
+      })
+      .on("click", () => {
+        action();
+        dropdown.style("display", "none");
+        dropdownVisible = false;
+        exportButton.text("Export ▼");
+      });
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', () => {
+    if (dropdownVisible) {
+      dropdown.style("display", "none");
+      dropdownVisible = false;
+      exportButton.text("Export ▼");
+    }
+  });
+
+  return container.node();
 })()
 ```

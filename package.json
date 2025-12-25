@@ -19,7 +19,8 @@
     "d3-selection": "^3.0.0",
     "dotenv": "^17.2.3",
     "exa-js": "^2.0.12",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "jspdf": "^3.0.4"
   },
   "devDependencies": {
     "ajv": "^8.17.0",

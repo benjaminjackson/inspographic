@@ -2,6 +2,7 @@ import { create, select } from "d3-selection"
 import { colors, typography } from "../theme.js"
 import { createForceSimulation, calculateNodeRadius } from "./forceGraph.js"
 import { downloadFile } from "../utils/downloadFile.js"
+import jsPDF from "jspdf"
 
 export function createGraphRenderer(width = 800, height = 600) {
   let container
@@ -216,5 +217,121 @@ export function createGraphRenderer(width = 800, height = 600) {
     downloadFile(svgContent, filename, 'image/svg+xml')
   }
 
-  return { render, update, showLoading, showError, getSvg, exportSvg }
+  /**
+   * Export graph as PNG with resolution scaling
+   * @param {string} filename - Output filename
+   * @param {number} scale - Resolution multiplier (1x, 2x, 4x)
+   */
+  function exportPng(filename = 'graph.png', scale = 1) {
+    if (!svg) {
+      showError('No graph to export')
+      return
+    }
+
+    // Create a canvas with scaled dimensions
+    const canvas = document.createElement('canvas')
+    const scaledWidth = width * scale
+    const scaledHeight = height * scale
+    canvas.width = scaledWidth
+    canvas.height = scaledHeight
+
+    const ctx = canvas.getContext('2d')
+
+    // Create an image from the SVG
+    const svgData = new XMLSerializer().serializeToString(svg)
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(svgBlob)
+
+    const img = new Image()
+    img.onload = () => {
+      // Scale the context for higher resolution
+      ctx.scale(scale, scale)
+
+      // Draw the image on the canvas
+      ctx.drawImage(img, 0, 0)
+
+      // Convert canvas to PNG blob
+      canvas.toBlob((blob) => {
+        const pngUrl = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = pngUrl
+        link.download = filename
+        link.click()
+
+        // Clean up
+        URL.revokeObjectURL(pngUrl)
+        URL.revokeObjectURL(url)
+      }, 'image/png')
+    }
+
+    img.onerror = () => {
+      showError('Failed to export PNG')
+      URL.revokeObjectURL(url)
+    }
+
+    img.src = url
+  }
+
+  /**
+   * Export graph as PDF
+   * @param {string} filename - Output filename
+   */
+  function exportPdf(filename = 'graph.pdf') {
+    if (!svg) {
+      showError('No graph to export')
+      return
+    }
+
+    // Create a canvas with 2x resolution for better quality
+    const scale = 2
+    const canvas = document.createElement('canvas')
+    const scaledWidth = width * scale
+    const scaledHeight = height * scale
+    canvas.width = scaledWidth
+    canvas.height = scaledHeight
+
+    const ctx = canvas.getContext('2d')
+
+    // Create an image from the SVG
+    const svgData = new XMLSerializer().serializeToString(svg)
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(svgBlob)
+
+    const img = new Image()
+    img.onload = () => {
+      // Scale the context for higher resolution
+      ctx.scale(scale, scale)
+
+      // Draw the image on the canvas
+      ctx.drawImage(img, 0, 0)
+
+      // Convert to image data URL
+      const imgData = canvas.toDataURL('image/png')
+
+      // Create PDF with same aspect ratio
+      const pdf = new jsPDF({
+        orientation: width > height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [width, height]
+      })
+
+      // Add image to PDF
+      pdf.addImage(imgData, 'PNG', 0, 0, width, height)
+
+      // Save PDF
+      pdf.save(filename)
+
+      // Clean up
+      URL.revokeObjectURL(url)
+    }
+
+    img.onerror = () => {
+      showError('Failed to export PDF')
+      URL.revokeObjectURL(url)
+    }
+
+    img.src = url
+  }
+
+  return { render, update, showLoading, showError, getSvg, exportSvg, exportPng, exportPdf }
 }
