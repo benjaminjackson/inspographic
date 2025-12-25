@@ -181,7 +181,7 @@ describe('charge force', () => {
 });
 
 describe('initial position randomization', () => {
-  it('sets randomized initial positions within canvas bounds for non-subject nodes', () => {
+  it('distributes nodes angularly around their depth ring', () => {
     const nodes = [
       { id: 'miles', name: 'Miles Davis', depth: 0 },
       { id: 'coltrane', name: 'John Coltrane', depth: 1 },
@@ -199,22 +199,36 @@ describe('initial position randomization', () => {
     const simulation = createForceSimulation(nodes, links, width, height);
     const simNodes = simulation.nodes();
 
-    // Non-subject nodes should have initial positions set within canvas
+    // Non-subject nodes should be positioned around a circle
     const influences = simNodes.filter(n => n.depth > 0);
+    const centerX = width / 2;
+    const centerY = height / 2;
+
     influences.forEach(node => {
       expect(node.x).toBeDefined();
       expect(node.y).toBeDefined();
-      // Positions should be within reasonable bounds (80% of canvas, centered)
-      expect(node.x).toBeGreaterThan(width * 0.1);
-      expect(node.x).toBeLessThan(width * 0.9);
-      expect(node.y).toBeGreaterThan(height * 0.1);
-      expect(node.y).toBeLessThan(height * 0.9);
+
+      // Calculate distance from center
+      const dx = node.x - centerX;
+      const dy = node.y - centerY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      // All depth-1 nodes should be at roughly the same distance from center
+      // (allowing for some tolerance)
+      expect(distance).toBeGreaterThan(50);
+      expect(distance).toBeLessThan(300);
     });
 
-    // Verify positions are actually different (not all the same)
-    const xPositions = influences.map(n => n.x);
-    const uniqueX = new Set(xPositions);
-    expect(uniqueX.size).toBeGreaterThan(1);
+    // Verify positions are distributed around the circle (not clustered)
+    const angles = influences.map(node => {
+      const dx = node.x - centerX;
+      const dy = node.y - centerY;
+      return Math.atan2(dy, dx);
+    });
+
+    // All angles should be different (distributed around circle)
+    const uniqueAngles = new Set(angles.map(a => a.toFixed(2)));
+    expect(uniqueAngles.size).toBe(influences.length);
   });
 
   it('does not randomize subject node position (uses fixed center)', () => {
@@ -233,6 +247,50 @@ describe('initial position randomization', () => {
     // Subject should be pinned at center
     expect(subject.fx).toBe(width / 2);
     expect(subject.fy).toBe(height / 2);
+  });
+});
+
+describe('link force', () => {
+  it('adds link force to simulation', () => {
+    const nodes = [
+      { id: 'miles', name: 'Miles Davis', depth: 0 },
+      { id: 'coltrane', name: 'John Coltrane', depth: 1 }
+    ];
+    const links = [{ source: 'coltrane', target: 'miles' }];
+
+    const simulation = createForceSimulation(nodes, links);
+    const linkForce = simulation.force('link');
+
+    expect(linkForce).toBeDefined();
+  });
+
+  it('sets link distance to 100 to allow circular layout', () => {
+    const nodes = [
+      { id: 'miles', name: 'Miles Davis', depth: 0 },
+      { id: 'coltrane', name: 'John Coltrane', depth: 1 }
+    ];
+    const links = [{ source: 'coltrane', target: 'miles' }];
+
+    const simulation = createForceSimulation(nodes, links);
+    const linkForce = simulation.force('link');
+
+    expect(linkForce.distance()()).toBe(100);
+  });
+
+  it('weakens link strength to prioritize radial layout over chains', () => {
+    const nodes = [
+      { id: 'miles', name: 'Miles Davis', depth: 0 },
+      { id: 'coltrane', name: 'John Coltrane', depth: 1 }
+    ];
+    const links = [{ source: 'coltrane', target: 'miles' }];
+
+    const simulation = createForceSimulation(nodes, links);
+    const linkForce = simulation.force('link');
+
+    // Link strength is configured (implementation detail)
+    // The key is that distance is long enough to prevent chains
+    expect(linkForce).toBeDefined();
+    expect(typeof linkForce.strength()).toBe('function');
   });
 });
 

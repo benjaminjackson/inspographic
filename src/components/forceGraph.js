@@ -152,21 +152,35 @@ export function createForceSimulation(nodes, links, width = 800, height = 600) {
 
   const subjectId = subject ? subject.id : null;
 
-  // Randomize initial positions for non-subject nodes to break symmetry
-  // Without randomization, symmetric starting positions lead to linear layouts
-  // Positions centered around middle with 80% canvas spread
-  nodes.forEach(node => {
-    if (node.depth > 0) {
-      node.x = width / 2 + (Math.random() - 0.5) * width * 0.8;
-      node.y = height / 2 + (Math.random() - 0.5) * height * 0.8;
-    }
-  });
-
   // Count nodes at each depth for dynamic radius calculation
   const depthCounts = {};
   nodes.forEach(node => {
     const depth = node.depth || 0;
     depthCounts[depth] = (depthCounts[depth] || 0) + 1;
+  });
+
+  // Group nodes by depth for angular distribution
+  const nodesByDepth = {};
+  nodes.forEach(node => {
+    const depth = node.depth || 0;
+    if (!nodesByDepth[depth]) nodesByDepth[depth] = [];
+    nodesByDepth[depth].push(node);
+  });
+
+  // Initialize positions: distribute nodes angularly around their depth ring
+  // This creates circular layouts instead of linear/flat arrangements
+  Object.entries(nodesByDepth).forEach(([depth, depthNodes]) => {
+    const d = parseInt(depth);
+    if (d === 0) return; // Skip subject (already pinned)
+
+    const radius = calculateRadialDistance(d, depthNodes.length, width, height);
+    const angleStep = (2 * Math.PI) / depthNodes.length;
+
+    depthNodes.forEach((node, index) => {
+      const angle = index * angleStep;
+      node.x = width / 2 + radius * Math.cos(angle);
+      node.y = height / 2 + radius * Math.sin(angle);
+    });
   });
 
   // Radial force: pulls nodes toward their designated ring
@@ -193,10 +207,18 @@ export function createForceSimulation(nodes, links, width = 800, height = 600) {
   // Center force: weak pull to keep graph centered without creating linear layout
   const centerForce = d3.forceCenter(width / 2, height / 2).strength(0.05);
 
+  // Link force: longer distance and weaker strength to allow radial layout
+  // Distance of 100 prevents tight chains that override circular positioning
+  // Strength of 0.3 (vs default 1.0) prioritizes radial force over link force
+  const linkForce = d3.forceLink(links)
+    .id(d => d.id)
+    .distance(100)
+    .strength(0.3);
+
   const simulation = d3.forceSimulation(nodes)
     .force('center', centerForce)
     .force('charge', chargeForce)
-    .force('link', d3.forceLink(links).id(d => d.id))
+    .force('link', linkForce)
     .force('radial', radialForce)
     .force('collision', collisionForce);
 
