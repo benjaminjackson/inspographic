@@ -2,6 +2,7 @@ import OpenAI from 'openai'
 import { readFileSync } from 'fs'
 import Ajv from 'ajv'
 import { createSystemPrompt, createUserPrompt } from '../src/api/prompts/influenceGraphPrompt.js'
+import { filterUnreachableNodes } from './filterUnreachableNodes.js'
 
 // Load schema for validation
 const schema = JSON.parse(readFileSync('schemas/influence-graph.schema.json', 'utf-8'))
@@ -158,13 +159,16 @@ export async function generateInfluenceGraphWithKey(personName, apiKey) {
       links: allLinks
     }
 
+    // Filter out orphaned nodes not connected to root
+    const filteredResult = filterUnreachableNodes(result)
+
     // Validate against schema
-    const isValid = validate(result)
+    const isValid = validate(filteredResult)
     if (!isValid) {
       throw new Error(`Schema validation failed: ${JSON.stringify(validate.errors)}`)
     }
 
-    return result
+    return filteredResult
   } catch (error) {
     // Re-throw with context
     throw new Error(`Failed to generate influence graph: ${error.message}`)
