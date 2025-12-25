@@ -64,4 +64,20 @@ describe('influence-graph schema', () => {
     expect(brokenErrors.length).toBeGreaterThan(0);
     expect(brokenErrors[0]).toContain('nonexistent');
   });
+
+  it('rejects nodes with additional properties not in schema', () => {
+    const dataWithSourceProperty = {
+      subject: "Test Person",
+      nodes: [
+        { id: "test", name: "Test Person", depth: 0 },
+        { id: "influencer", name: "Influencer", depth: 1, source: "some-value" }
+      ],
+      links: [{ source: "influencer", target: "test" }]
+    };
+    const valid = validate(dataWithSourceProperty);
+    expect(valid).toBe(false);
+    expect(validate.errors).toBeDefined();
+    expect(validate.errors[0].keyword).toBe('additionalProperties');
+    expect(validate.errors[0].params.additionalProperty).toBe('source');
+  });
 });
