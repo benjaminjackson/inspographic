@@ -209,3 +209,36 @@ renderer.update(initialData);
 // Display container
 display(graphContainer);
 ```
+
+```js
+// Export SVG button
+(() => {
+  const button = d3.create("button")
+    .text("Export SVG")
+    .style("margin-top", "12px")
+    .style("padding", "8px 16px")
+    .style("background", "#444")
+    .style("color", "white")
+    .style("border", "none")
+    .style("border-radius", "4px")
+    .style("cursor", "pointer")
+    .style("font-size", "14px")
+    .on("click", () => {
+      // Get subject from current graph data
+      const hash = window.location.hash;
+      let subject = 'graph';
+      if (hash.startsWith('#data=')) {
+        try {
+          const data = JSON.parse(decodeURIComponent(hash.slice(6)));
+          if (data.subject) {
+            subject = data.subject.toLowerCase().replace(/\s+/g, '-');
+          }
+        } catch (e) {
+          // Use default
+        }
+      }
+      renderer.exportSvg(`${subject}-influences.svg`);
+    });
+  return button.node();
+})()
+```

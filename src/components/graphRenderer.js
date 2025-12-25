@@ -1,6 +1,7 @@
 import { create, select } from "d3-selection"
 import { colors, typography } from "../theme.js"
 import { createForceSimulation, calculateNodeRadius } from "./forceGraph.js"
+import { downloadFile } from "../utils/downloadFile.js"
 
 export function createGraphRenderer(width = 800, height = 600) {
   let container
@@ -32,6 +33,11 @@ export function createGraphRenderer(width = 800, height = 600) {
 
     // Create groups for links, nodes, and labels
     const svgSelection = select(svg)
+    // Add background rect for proper SVG export (CSS background doesn't export)
+    svgSelection.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", colors.background)
     linkGroup = svgSelection.append("g").node()
     nodeGroup = svgSelection.append("g").node()
     labelGroup = svgSelection.append("g").node()
@@ -197,5 +203,18 @@ export function createGraphRenderer(width = 800, height = 600) {
     }
   }
 
-  return { render, update, showLoading, showError }
+  function getSvg() {
+    return svg
+  }
+
+  function exportSvg(filename = 'graph.svg') {
+    if (!svg) {
+      showError('No graph to export')
+      return
+    }
+    const svgContent = svg.outerHTML
+    downloadFile(svgContent, filename, 'image/svg+xml')
+  }
+
+  return { render, update, showLoading, showError, getSvg, exportSvg }
 }
