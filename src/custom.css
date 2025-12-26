@@ -73,7 +73,7 @@ header h1 a {
 .toolbar-row {
   display: flex;
   gap: 0.75rem;
-  align-items: stretch;
+  align-items: center;
   margin-bottom: 0.625rem;
 }
 
