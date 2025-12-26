@@ -23,6 +23,7 @@ export function createGraphRenderer(width = 800, height = 600) {
   function render() {
     // Create container div
     container = document.createElement('div')
+    container.className = 'graph-container'
     container.style.position = 'relative'
 
     // Create SVG
