@@ -81,14 +81,24 @@ header h1 a {
   margin-bottom: 0;
 }
 
+/* Override Pico's form element variables for toolbar inputs */
 .toolbar-input {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
-  line-height: 1.4;
-  border-radius: 6px;
-  border: 1px solid #444;
+  --pico-form-element-spacing-vertical: 0.375rem;
+  --pico-form-element-spacing-horizontal: 0.75rem;
+  --pico-font-size: 0.875rem;
+  --pico-line-height: 1.4;
+  --pico-border-radius: 6px;
+  --pico-border-width: 1px;
+
+  padding: var(--pico-form-element-spacing-vertical) var(--pico-form-element-spacing-horizontal);
+  font-size: var(--pico-font-size);
+  line-height: var(--pico-line-height);
+  border-radius: var(--pico-border-radius);
+  border: var(--pico-border-width) solid #444;
   background: #2a2a2a;
   color: #f5f1e8;
+  margin: 0;
+  height: auto;
 }
 
 .toolbar-input::placeholder {
