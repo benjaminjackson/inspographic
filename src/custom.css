@@ -3,6 +3,33 @@ body {
   color: #f5f1e8;
 }
 
+/* Main content container */
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+/* Header styling */
+header {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 0;
+}
+
+header h1 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+header p {
+  font-size: 1.125rem;
+  color: #999;
+  margin-top: 0;
+}
+
 /* Style header and links for dark theme */
 header a,
 a {
@@ -22,17 +49,140 @@ header h1 a {
   pointer-events: none;
 }
 
-/* Responsive graph container */
+/* Poster-style graph container */
 .graph-container {
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
+  max-width: 600px;
+  margin: 2rem auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .graph-container svg {
-  max-width: 100%;
+  display: block;
+  width: 100%;
   height: auto;
 }
+
+/* Toolbar styling */
+.toolbar {
+  margin-bottom: 2rem;
+}
+
+.toolbar-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+  margin-bottom: 0.625rem;
+}
+
+.toolbar-row:last-child {
+  margin-bottom: 0;
+}
+
+.toolbar-input {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #2a2a2a;
+  color: #f5f1e8;
+}
+
+.toolbar-input::placeholder {
+  color: #888;
+}
+
+.toolbar-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+}
+
+.toolbar-button-primary {
+  background: #e8b858;
+  color: white;
+}
+
+.toolbar-button-primary:hover {
+  background: #d4a648;
+}
+
+.toolbar-button-secondary {
+  background: #444;
+  color: white;
+}
+
+.toolbar-button-secondary:hover {
+  background: #555;
+}
+
+/* Export dropdown */
+.export-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.export-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: #333;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  min-width: 140px;
+}
+
+.export-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: white;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background 0.2s;
+}
+
+.export-dropdown-item:hover {
+  background: #444;
+}
+
+.export-dropdown-item:first-child {
+  border-radius: 6px 6px 0 0;
+}
+
+.export-dropdown-item:last-child {
+  border-radius: 0 0 6px 6px;
+}
+
+/* Warning banner */
+.warning-banner {
+  padding: 1rem 1.25rem;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  color: #856404;
+}
+
+/* Help text */
+.help-text {
+  margin-bottom: 2rem;
+  color: #666;
+  font-size: 0.8125rem;
+}
+
 
 /* Touch-friendly export buttons (44px minimum touch target per WCAG 2.1) */
 /* Target dropdown buttons specifically */

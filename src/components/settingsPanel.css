@@ -1,5 +1,7 @@
-/* Settings Panel Styles */
+/* Settings Panel - Minimal Custom Styles */
+/* Pico CSS handles most styling automatically via semantic HTML */
 
+/* Modal overlay (Pico doesn't provide this) */
 .settings-overlay {
   position: fixed;
   top: 0;
@@ -11,188 +13,78 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  transition: opacity 0.2s ease;
 }
 
 .settings-overlay.hidden {
   display: none;
 }
 
-.settings-container {
-  background: white;
-  border-radius: 8px;
-  padding: 24px;
+/* Article inside overlay should have max-width and white background */
+.settings-overlay article {
   max-width: 500px;
   width: 90%;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  margin: 0;
 }
 
-.settings-header {
+/* Header layout with close button */
+.settings-overlay header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding-bottom: 1rem;
 }
 
-.settings-title {
+.settings-overlay header h2 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #1a1a1a;
 }
 
+/* Close button styling */
 .close-button {
   background: none;
   border: none;
-  font-size: 32px;
-  color: #666;
-  cursor: pointer;
+  font-size: 2rem;
+  line-height: 1;
   padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
 }
 
 .close-button:hover {
-  color: #333;
+  opacity: 1;
 }
 
-.close-button:focus {
-  outline: 2px solid #4ecdc4;
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
+/* Warning message */
 .api-key-warning {
-  background: #fff3cd;
-  border: 1px solid #ffc107;
-  border-radius: 4px;
-  padding: 12px;
-  margin-bottom: 16px;
-  color: #856404;
-  font-size: 14px;
+  background: var(--pico-form-element-invalid-border-color, #c62828);
+  color: white;
+  padding: 0.75rem;
+  border-radius: var(--pico-border-radius, 0.25rem);
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
 }
 
-label[for="api-key-input"] {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #333;
-}
-
-#api-key-input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
-  font-family: 'Courier New', monospace;
-  margin-bottom: 16px;
-  box-sizing: border-box;
-}
-
-#api-key-input:focus {
-  outline: none;
-  border-color: #4ecdc4;
-  box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
-}
-
-.button-container {
+/* Footer button layout */
+.settings-overlay footer {
   display: flex;
-  gap: 12px;
+  gap: 0.75rem;
   justify-content: flex-end;
+  padding-top: 1rem;
 }
 
-.save-button,
-.clear-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.save-button {
-  background: #4ecdc4;
-  color: white;
-}
-
-.save-button:hover {
-  background: #45b8b0;
-}
-
-.save-button:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.3);
-}
-
-.clear-button {
-  background: #f44336;
-  color: white;
-}
-
-.clear-button:hover {
-  background: #da190b;
-}
-
-.clear-button:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.3);
-}
-
-/* Responsive */
+/* Responsive mobile layout */
 @media (max-width: 600px) {
-  .settings-container {
+  .settings-overlay article {
     width: 95%;
-    padding: 20px;
   }
 
-  .settings-title {
-    font-size: 20px;
-  }
-
-  .button-container {
+  .settings-overlay footer {
     flex-direction: column;
   }
 
-  .save-button,
-  .clear-button {
+  .settings-overlay footer button {
     width: 100%;
-  }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .settings-container {
-    background: #2a2a2a;
-  }
-
-  .settings-title {
-    color: #fff;
-  }
-
-  label[for="api-key-input"] {
-    color: #eee;
-  }
-
-  #api-key-input {
-    background: #1a1a1a;
-    border-color: #444;
-    color: #fff;
-  }
-
-  #api-key-input:focus {
-    border-color: #4ecdc4;
-  }
-
-  .api-key-warning {
-    background: #3e3a2d;
-    border-color: #d4a50a;
-    color: #ffd54f;
   }
 }

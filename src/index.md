@@ -39,50 +39,12 @@ const panelElement = settingsPanel.render();
 document.body.appendChild(panelElement);
 ```
 
-```js
-// Settings button (fixed position bottom-right)
-(() => {
-  const button = d3.create("button")
-    .attr("class", "settings-button")
-    .style("position", "fixed")
-    .style("bottom", "20px")
-    .style("right", "20px")
-    .style("padding", "12px 20px")
-    .style("background", colors.nodeAccent)
-    .style("color", "white")
-    .style("border", "none")
-    .style("border-radius", "8px")
-    .style("cursor", "pointer")
-    .style("font-size", "16px")
-    .style("font-weight", "500")
-    .style("box-shadow", "0 2px 8px rgba(0,0,0,0.2)")
-    .style("transition", "all 0.2s")
-    .style("z-index", "999")
-    .text("⚙ Settings")
-    .on("click", () => settingsPanel.show())
-    .on("mouseover", function() {
-      d3.select(this).style("transform", "translateY(-2px)")
-        .style("box-shadow", "0 4px 12px rgba(0,0,0,0.3)");
-    })
-    .on("mouseout", function() {
-      d3.select(this).style("transform", "translateY(0)")
-        .style("box-shadow", "0 2px 8px rgba(0,0,0,0.2)");
-    });
-
-  return button.node();
-})()
-```
 
 ```js
 // API key warning message - reactive to key changes
 (() => {
   const warning = d3.create("div")
-    .style("padding", "16px")
-    .style("background", "#fff3cd")
-    .style("border", "1px solid #ffc107")
-    .style("border-radius", "8px")
-    .style("margin-bottom", "20px")
-    .style("color", "#856404")
+    .attr("class", "warning-banner")
     .html("⚠️ <strong>No API key saved.</strong> Click Settings to enter your Exa API key.")
     .node();
 
@@ -99,34 +61,24 @@ document.body.appendChild(panelElement);
 ```
 
 ```js
-// Person name input and generate button
+// Unified toolbar with input, generate, export, and settings
 (() => {
-  const container = d3.create("div")
-    .style("margin-bottom", "20px")
-    .style("display", "flex")
-    .style("gap", "10px")
-    .style("align-items", "center");
+  const toolbar = d3.create("div")
+    .attr("class", "toolbar");
 
-  const input = container.append("input")
+  // Top row: input and generate button
+  const inputRow = toolbar.append("div")
+    .attr("class", "toolbar-row");
+
+  const input = inputRow.append("input")
     .attr("type", "text")
+    .attr("class", "toolbar-input")
     .attr("placeholder", "e.g., 'Miles Davis' or 'John Williams composer'")
-    .style("flex", "1")
-    .style("padding", "10px 12px")
-    .style("border", "1px solid #ccc")
-    .style("border-radius", "4px")
-    .style("font-size", "14px");
+    .style("flex", "1");
 
-  const button = container.append("button")
-    .text("Generate Graph")
-    .style("padding", "10px 20px")
-    .style("background", colors.nodeAccent)
-    .style("color", "white")
-    .style("border", "none")
-    .style("border-radius", "4px")
-    .style("cursor", "pointer")
-    .style("font-size", "14px")
-    .style("font-weight", "500")
-    .style("transition", "background 0.2s")
+  const generateButton = inputRow.append("button")
+    .attr("class", "toolbar-button toolbar-button-primary")
+    .text("Generate")
     .on("click", async () => {
       const personName = input.node().value.trim();
       if (!personName) {
@@ -140,7 +92,7 @@ document.body.appendChild(panelElement);
         return;
       }
 
-      button.text("Generating...").attr("disabled", true);
+      generateButton.text("Generating...").attr("disabled", true);
       input.attr("disabled", true);
       renderer.showLoading(personName);
 
@@ -148,21 +100,100 @@ document.body.appendChild(panelElement);
         const result = await generateInfluenceGraph(
           personName,
           apiKey,
-          (entity) => renderer.showLoading(entity) // Update loading text for each entity
+          (entity) => renderer.showLoading(entity)
         );
-        // Update hash (for sharing) WITHOUT reload
         window.location.hash = `data=${encodeURIComponent(JSON.stringify(result))}`;
-        // Reactive update
         renderer.update(result);
       } catch (error) {
         renderer.showError(`Error: ${error.message}`);
       } finally {
-        button.text("Generate Graph").attr("disabled", null);
+        generateButton.text("Generate").attr("disabled", null);
         input.attr("disabled", null);
       }
     });
 
-  return container.node();
+  // Bottom row: export and settings buttons
+  const buttonRow = toolbar.append("div")
+    .attr("class", "toolbar-row");
+
+  // Export dropdown
+  const exportContainer = buttonRow.append("div")
+    .attr("class", "export-dropdown");
+
+  function getSubject() {
+    const hash = window.location.hash;
+    let subject = 'graph';
+    if (hash.startsWith('#data=')) {
+      try {
+        const data = JSON.parse(decodeURIComponent(hash.slice(6)));
+        if (data.subject) {
+          subject = data.subject.toLowerCase().replace(/\s+/g, '-');
+        }
+      } catch (e) {
+        // Use default
+      }
+    }
+    return subject;
+  }
+
+  let dropdownVisible = false;
+
+  const exportButton = exportContainer.append("button")
+    .attr("class", "toolbar-button toolbar-button-secondary")
+    .text("Export ▼")
+    .on("click", (event) => {
+      event.stopPropagation();
+      dropdownVisible = !dropdownVisible;
+      dropdown.style("display", dropdownVisible ? "block" : "none");
+      exportButton.text(dropdownVisible ? "Export ▲" : "Export ▼");
+    });
+
+  const dropdown = exportContainer.append("div")
+    .attr("class", "export-dropdown-menu")
+    .style("display", "none");
+
+  const exportOptions = [
+    { label: "Export SVG", action: () => {
+      const subject = getSubject();
+      renderer.exportSvg(`${subject}-influences.svg`);
+    }},
+    { label: "Export PNG", action: () => {
+      const subject = getSubject();
+      renderer.exportPng(`${subject}-influences.png`, 2);
+    }},
+    { label: "Export PDF", action: () => {
+      const subject = getSubject();
+      renderer.exportPdf(`${subject}-influences.pdf`);
+    }}
+  ];
+
+  exportOptions.forEach(({ label, action }) => {
+    dropdown.append("button")
+      .attr("class", "export-dropdown-item")
+      .text(label)
+      .on("click", () => {
+        action();
+        dropdown.style("display", "none");
+        dropdownVisible = false;
+        exportButton.text("Export ▼");
+      });
+  });
+
+  document.addEventListener('click', () => {
+    if (dropdownVisible) {
+      dropdown.style("display", "none");
+      dropdownVisible = false;
+      exportButton.text("Export ▼");
+    }
+  });
+
+  // Settings button
+  const settingsButton = buttonRow.append("button")
+    .attr("class", "toolbar-button toolbar-button-secondary")
+    .text("⚙ Settings")
+    .on("click", () => settingsPanel.show());
+
+  return toolbar.node();
 })()
 ```
 
@@ -170,9 +201,7 @@ document.body.appendChild(panelElement);
 // Help text for common names
 (() => {
   const helpText = d3.create("div")
-    .style("margin-bottom", "20px")
-    .style("color", "#666")
-    .style("font-size", "13px")
+    .attr("class", "help-text")
     .text("💡 Tip: Add context for common names (e.g., 'John Williams composer' vs 'John Williams')");
 
   return helpText.node();
@@ -204,8 +233,8 @@ const mockDataFallback = {
 ```
 
 ```js
-// Create renderer and get container
-const renderer = createGraphRenderer(800, 600);
+// Create renderer and get container (poster aspect ratio 2:3)
+const renderer = createGraphRenderer(600, 900);
 const graphContainer = renderer.render();
 
 // Load initial data from hash or use mock data
@@ -229,112 +258,3 @@ renderer.update(initialData);
 display(graphContainer);
 ```
 
-```js
-// Export dropdown
-(() => {
-  const container = d3.create("div")
-    .style("margin-top", "12px")
-    .style("position", "relative")
-    .style("display", "inline-block");
-
-  // Helper to get subject from hash
-  function getSubject() {
-    const hash = window.location.hash;
-    let subject = 'graph';
-    if (hash.startsWith('#data=')) {
-      try {
-        const data = JSON.parse(decodeURIComponent(hash.slice(6)));
-        if (data.subject) {
-          subject = data.subject.toLowerCase().replace(/\s+/g, '-');
-        }
-      } catch (e) {
-        // Use default
-      }
-    }
-    return subject;
-  }
-
-  let dropdownVisible = false;
-
-  const exportButton = container.append("button")
-    .text("Export ▼")
-    .style("padding", "8px 16px")
-    .style("background", "#444")
-    .style("color", "white")
-    .style("border", "none")
-    .style("border-radius", "4px")
-    .style("cursor", "pointer")
-    .style("font-size", "14px")
-    .on("click", (event) => {
-      event.stopPropagation();
-      dropdownVisible = !dropdownVisible;
-      dropdown.style("display", dropdownVisible ? "block" : "none");
-      exportButton.text(dropdownVisible ? "Export ▲" : "Export ▼");
-    });
-
-  // Dropdown menu
-  const dropdown = container.append("div")
-    .style("display", "none")
-    .style("position", "absolute")
-    .style("top", "100%")
-    .style("left", "0")
-    .style("margin-top", "4px")
-    .style("background", "#333")
-    .style("border-radius", "4px")
-    .style("box-shadow", "0 2px 8px rgba(0,0,0,0.3)")
-    .style("z-index", "1000")
-    .style("min-width", "140px");
-
-  const exportOptions = [
-    { label: "Export SVG", action: () => {
-      const subject = getSubject();
-      renderer.exportSvg(`${subject}-influences.svg`);
-    }},
-    { label: "Export PNG", action: () => {
-      const subject = getSubject();
-      renderer.exportPng(`${subject}-influences.png`, 2);
-    }},
-    { label: "Export PDF", action: () => {
-      const subject = getSubject();
-      renderer.exportPdf(`${subject}-influences.pdf`);
-    }}
-  ];
-
-  exportOptions.forEach(({ label, action }) => {
-    dropdown.append("button")
-      .text(label)
-      .style("display", "block")
-      .style("width", "100%")
-      .style("padding", "8px 16px")
-      .style("background", "transparent")
-      .style("color", "white")
-      .style("border", "none")
-      .style("text-align", "left")
-      .style("cursor", "pointer")
-      .style("font-size", "14px")
-      .on("mouseover", function() {
-        d3.select(this).style("background", "#444");
-      })
-      .on("mouseout", function() {
-        d3.select(this).style("background", "transparent");
-      })
-      .on("click", () => {
-        action();
-        dropdown.style("display", "none");
-        dropdownVisible = false;
-        exportButton.text("Export ▼");
-      });
-  });
-
-  // Close dropdown when clicking outside
-  document.addEventListener('click', () => {
-    if (dropdownVisible) {
-      dropdown.style("display", "none");
-      dropdownVisible = false;
-      exportButton.text("Export ▼");
-    }
-  });
-
-  return container.node();
-})()
-```

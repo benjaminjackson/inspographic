@@ -30,7 +30,7 @@ describe('settingsPanel', () => {
       expect(element).toBeInstanceOf(HTMLElement)
       expect(element.classList.contains('settings-overlay')).toBe(true)
 
-      const container = element.querySelector('.settings-container')
+      const container = element.querySelector('article')
       expect(container).toBeInstanceOf(HTMLElement)
     })
 
@@ -38,10 +38,10 @@ describe('settingsPanel', () => {
       panel = createSettingsPanel()
       const element = panel.render()
 
-      const header = element.querySelector('.settings-header')
+      const header = element.querySelector('header')
       expect(header).toBeInstanceOf(HTMLElement)
 
-      const title = header.querySelector('.settings-title')
+      const title = header.querySelector('h2')
       expect(title.textContent).toContain('Settings')
 
       const closeBtn = header.querySelector('.close-button')
@@ -61,7 +61,7 @@ describe('settingsPanel', () => {
       panel = createSettingsPanel()
       const element = panel.render()
 
-      const saveBtn = element.querySelector('.save-button')
+      const saveBtn = element.querySelector('footer button:not(.contrast)')
       expect(saveBtn).toBeInstanceOf(HTMLElement)
       expect(saveBtn.textContent).toContain('Save')
     })
@@ -70,7 +70,7 @@ describe('settingsPanel', () => {
       panel = createSettingsPanel()
       const element = panel.render()
 
-      const clearBtn = element.querySelector('.clear-button')
+      const clearBtn = element.querySelector('button.contrast')
       expect(clearBtn).toBeInstanceOf(HTMLElement)
       expect(clearBtn.textContent).toContain('Clear')
     })
@@ -132,7 +132,7 @@ describe('settingsPanel', () => {
 
     it('save button saves API key to localStorage', () => {
       const input = document.querySelector('#api-key-input')
-      const saveBtn = document.querySelector('.save-button')
+      const saveBtn = document.querySelector('footer button:not(.contrast)')
 
       input.value = 'test-key-123'
       saveBtn.click()
@@ -147,7 +147,7 @@ describe('settingsPanel', () => {
       // Mock window.confirm to return false (cancel)
       const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
 
-      const clearBtn = document.querySelector('.clear-button')
+      const clearBtn = document.querySelector('button.contrast')
       clearBtn.click()
 
       expect(confirmSpy).toHaveBeenCalled()
@@ -163,7 +163,7 @@ describe('settingsPanel', () => {
       // Mock window.confirm to return true (OK)
       const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
 
-      const clearBtn = document.querySelector('.clear-button')
+      const clearBtn = document.querySelector('button.contrast')
       clearBtn.click()
 
       expect(confirmSpy).toHaveBeenCalled()
@@ -199,7 +199,7 @@ describe('settingsPanel', () => {
 
     it('clicking inside container does not hide panel', () => {
       panel.show()
-      const container = document.querySelector('.settings-container')
+      const container = document.querySelector('article')
 
       container.click()
       expect(panel.isVisible()).toBe(true)
@@ -210,7 +210,7 @@ describe('settingsPanel', () => {
       document.addEventListener('apiKeyChanged', eventSpy)
 
       const input = document.querySelector('#api-key-input')
-      const saveBtn = document.querySelector('.save-button')
+      const saveBtn = document.querySelector('footer button:not(.contrast)')
 
       input.value = 'test-key-123'
       saveBtn.click()
@@ -227,7 +227,7 @@ describe('settingsPanel', () => {
 
       const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
 
-      const clearBtn = document.querySelector('.clear-button')
+      const clearBtn = document.querySelector('button.contrast')
       clearBtn.click()
 
       expect(eventSpy).toHaveBeenCalled()

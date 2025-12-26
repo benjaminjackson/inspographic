@@ -18,16 +18,13 @@ export function createSettingsPanel() {
     element = document.createElement('div')
     element.className = 'settings-overlay hidden'
 
-    // Create container
-    const container = document.createElement('div')
-    container.className = 'settings-container'
+    // Create article (Pico card component)
+    const container = document.createElement('article')
 
     // Header
-    const header = document.createElement('div')
-    header.className = 'settings-header'
+    const header = document.createElement('header')
 
     const title = document.createElement('h2')
-    title.className = 'settings-title'
     title.textContent = 'Settings'
 
     const closeBtn = document.createElement('button')
@@ -54,27 +51,25 @@ export function createSettingsPanel() {
     input.placeholder = 'Enter your Exa API key'
     input.value = getApiKey() || ''
 
-    // Button container
-    const buttonContainer = document.createElement('div')
-    buttonContainer.className = 'button-container'
+    // Footer with buttons (Pico convention)
+    const footer = document.createElement('footer')
 
     const saveBtn = document.createElement('button')
-    saveBtn.className = 'save-button'
     saveBtn.textContent = 'Save'
 
     const clearBtn = document.createElement('button')
-    clearBtn.className = 'clear-button'
+    clearBtn.className = 'contrast'
     clearBtn.textContent = 'Clear'
 
-    buttonContainer.appendChild(saveBtn)
-    buttonContainer.appendChild(clearBtn)
+    footer.appendChild(saveBtn)
+    footer.appendChild(clearBtn)
 
     // Assemble
     container.appendChild(header)
     container.appendChild(warning)
     container.appendChild(inputLabel)
     container.appendChild(input)
-    container.appendChild(buttonContainer)
+    container.appendChild(footer)
 
     element.appendChild(container)
 
