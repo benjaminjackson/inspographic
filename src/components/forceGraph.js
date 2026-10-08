@@ -235,3 +235,28 @@ export function createForceSimulation(nodes, links, width = 800, height = 600) {
 
   return simulation;
 }
+
+/**
+ * Returns an SVG viewBox that shows every node and its label.
+ * Zooms out around the center only as far as needed, and keeps the aspect ratio.
+ * @param {Array} nodes - Nodes with x/y positions
+ * @param {number} width - Default view width
+ * @param {number} height - Default view height
+ * @returns {Array} [x, y, width, height]
+ */
+export function fitViewBox(nodes, width, height) {
+  // Labels are centered on the node and drawn below it
+  const labelHalfWidth = 80;
+  const labelDrop = 40;
+  const cx = width / 2;
+  const cy = height / 2;
+  let scale = 1;
+  nodes.forEach(n => {
+    scale = Math.max(
+      scale,
+      (Math.abs(n.x - cx) + labelHalfWidth) / cx,
+      (Math.abs(n.y - cy) + labelDrop) / cy
+    );
+  });
+  return [cx - cx * scale, cy - cy * scale, width * scale, height * scale];
+}
