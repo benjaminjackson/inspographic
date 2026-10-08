@@ -2,9 +2,9 @@
 
 inspographic draws a network diagram of the people and things that influenced anyone you name. Type a name, and it asks [Exa](https://exa.ai) who influenced that person, then who influenced those influences. It draws the result as a force-directed graph that you can export as SVG, PNG, or PDF.
 
-![The influence graph that inspographic generated for Bad Bunny](docs/images/bad-bunny-app.png)
+![The influence graph that inspographic generated for Lady Gaga](docs/images/lady-gaga-app.png)
 
-*A test run for Bad Bunny. The subject is the gold node. The large nodes are direct influences (depth 1). The small nodes are influences of those influences (depth 2).*
+*A test run for Lady Gaga. The subject is the gold node. The large nodes are direct influences (depth 1). The small nodes are influences of those influences (depth 2).*
 
 ## How it works
 
@@ -13,7 +13,7 @@ inspographic draws a network diagram of the people and things that influenced an
 3. The server asks Exa for the subject and their direct influences. It then asks again for each of the first three direct influences, to get the second level. That is about 4 Exa calls per graph (see [docs/exa-api-costs.md](docs/exa-api-costs.md)).
 4. While it works, the server streams the name it is researching back to the browser, and the button shows it:
 
-   ![The Generate button showing "Researching Bad Bunny..."](docs/images/bad-bunny-researching.png)
+   ![The Generate button showing "Researching Lady Gaga..."](docs/images/lady-gaga-researching.png)
 
 5. The server checks each answer against `schemas/influence-graph.schema.json`, removes nodes that do not connect to the subject, and saves the graph in `server/cache/`. A second request for the same name uses the saved graph and makes no Exa calls.
 6. The browser draws the graph with D3.
