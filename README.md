@@ -2,7 +2,7 @@
 
 inspographic draws a network diagram of the people and things that influenced anyone you name. Type a name, and it asks [Exa](https://exa.ai) who influenced that person, then who influenced those influences. It draws the result as a force-directed graph that you can export as SVG, PNG, or PDF.
 
-![The influence graph that inspographic generated for Lady Gaga](docs/images/lady-gaga-app.png)
+![The influence graph that inspographic generated for Lady Gaga](docs/images/lady-gaga-graph.png)
 
 *A test run for Lady Gaga. The subject is the gold node. The large nodes are direct influences (depth 1). The small nodes are influences of those influences (depth 2).*
 
