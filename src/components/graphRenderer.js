@@ -1,6 +1,6 @@
 import { create, select } from "d3-selection"
 import { colors, typography } from "../theme.js"
-import { createForceSimulation, calculateNodeRadius } from "./forceGraph.js"
+import { createForceSimulation, calculateNodeRadius, fitViewBox } from "./forceGraph.js"
 import { downloadFile } from "../utils/downloadFile.js"
 import jsPDF from "jspdf"
 import "svg2pdf.js"
@@ -40,6 +40,7 @@ export function createGraphRenderer(width = 800, height = 600) {
     const svgSelection = select(svg)
     // Add background rect for proper SVG export (CSS background doesn't export)
     svgSelection.append("rect")
+      .attr("class", "graph-background")
       .attr("width", width)
       .attr("height", height)
       .attr("fill", colors.background)
@@ -185,6 +186,12 @@ export function createGraphRenderer(width = 800, height = 600) {
       labelSelection
         .attr("x", d => d.x)
         .attr("y", d => d.y)
+
+      // Zoom out so nodes pushed past the edges stay visible
+      const [x, y, w, h] = fitViewBox(nodes, width, height)
+      select(svg).attr("viewBox", [x, y, w, h])
+      select(svg).select(".graph-background")
+        .attr("x", x).attr("y", y).attr("width", w).attr("height", h)
     })
   }
 

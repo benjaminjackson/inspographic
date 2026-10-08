@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createForceSimulation, calculateNodeDepths, calculateRadialDistance, calculateCollisionRadius, countNodeConnections, calculateNodeRadius } from '../../src/components/forceGraph.js';
+import { createForceSimulation, calculateNodeDepths, calculateRadialDistance, calculateCollisionRadius, countNodeConnections, calculateNodeRadius, fitViewBox } from '../../src/components/forceGraph.js';
 
 describe('forceGraph', () => {
   it('exports createForceSimulation function', () => {
@@ -564,5 +564,21 @@ describe('calculateNodeRadius', () => {
     const result = calculateNodeRadius(subject, links, 6, 20);
     expect(result).toBeGreaterThan(6);
     expect(result).toBeLessThanOrEqual(20);
+  });
+});
+
+describe('fitViewBox', () => {
+  it('keeps the default view when every node fits', () => {
+    const nodes = [{ x: 400, y: 300 }, { x: 300, y: 250 }];
+    expect(fitViewBox(nodes, 800, 600)).toEqual([0, 0, 800, 600]);
+  });
+
+  it('zooms out around the center, keeping the aspect ratio, to fit nodes outside the bounds', () => {
+    const nodes = [{ x: 400, y: 300 }, { x: 400, y: -300 }];
+    const [x, y, w, h] = fitViewBox(nodes, 800, 600);
+    expect(y).toBeLessThanOrEqual(-300 - 40);
+    expect(w / h).toBeCloseTo(800 / 600);
+    expect(x + w / 2).toBeCloseTo(400);
+    expect(y + h / 2).toBeCloseTo(300);
   });
 });
