@@ -6,7 +6,8 @@ import { filterUnreachableNodes } from './filterUnreachableNodes.js'
 
 // Load schema for validation
 const schema = JSON.parse(readFileSync('schemas/influence-graph.schema.json', 'utf-8'))
-const ajv = new Ajv()
+// Exa's outputSchema does not stop extra fields (e.g. "citations"), so strip them before validating
+const ajv = new Ajv({ removeAdditional: true })
 const validate = ajv.compile(schema)
 
 /**
